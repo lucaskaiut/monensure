@@ -1,50 +1,67 @@
 <?php
 
-namespace App\Http\Validators;
+namespace App\Http\Requests;
 
-use App\Interfaces\ValidatorInterface;
-use App\Traits\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-final class UserValidator implements ValidatorInterface
+class RegisterUserRequest extends FormRequest
 {
-    use Validator;
-
-    public function __construct()
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize()
     {
+        return true;
+    }
 
-        $rules = [
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        return [
             'firstname' => [
-                Rule::requiredIf(!request()->id),
+                'required',
                 'min:4',
                 'max:128'
             ],
             'lastname' => [
-                Rule::requiredIf(!request()->id),
+                'required',
                 'min:4',
                 'max:128'
             ],
             'email' => [
-                Rule::requiredIf(!request()->id),
-                Rule::unique('users', 'email')->ignore(request()->id),
+                'required',
+                Rule::unique('users', 'email'),
                 'email'
             ],
             'password' => [
-                function($attribute, $value, $fail){
-                    if(request()->id)
-                        $fail("O campo senha não é permitido na atualização de um usuário");
-                },
+                'required',
                 'min:4',
                 'max:32',
                 'confirmed'
             ],
             'phone' => [
+                'required',
                 'min:11',
                 'max:11',
             ],
+            'group_name' => [
+                'required',
+                'min:4',
+                'max:64'
+            ]
         ];
+    }
 
-        $messages = [
+    public function messages(): array
+    {
+        return [
             'firstname.required' => 'O nome é obrigatório',
             'firstname.min' => 'O nome precisa ter entre 4 e 128 caracteres.',
             'firstname.max' => 'O nome precisa ter entre 4 e 128 caracteres',
@@ -60,10 +77,9 @@ final class UserValidator implements ValidatorInterface
             'password.confirmed' => 'O campo senha precisa de confirmação.',
             'phone.min' => 'O campo  telefone deve ter 11 caracteres',
             'phone.max' => 'O campo  telefone deve ter 11 caracteres',
+            'group_name.required' => 'O nome do grupo é obrigatório',
+            'group_name.min' => 'O nome do grupo precisa ter entre 4 e 128 caracteres.',
+            'group_name.max' => 'O nome do grupo precisa ter entre 4 e 128 caracteres',
         ];
-
-        $this->setRules($rules);
-
-        $this->setMessages($messages);
     }
 }

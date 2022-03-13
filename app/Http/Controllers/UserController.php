@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\RegisterUserRequest;
+use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Responses;
@@ -11,6 +13,7 @@ use App\Interfaces\ControllerInterface;
 use App\Services\GroupService;
 use App\Services\UserService;
 use App\Traits\CoreController;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -52,6 +55,34 @@ class UserController extends Controller implements ControllerInterface
             $token = $user->createToken('access_token', []);
 
             return Responses::created(['token' => $token->plainTextToken]);
+        });
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+        return DB::transaction(function() use ($request) {
+            $user = $this->service->findOneBy('email', $request->email);
+
+            throw_unless($user, new ModelNotFoundException("Usuário não encontrado"));
+
+            $code = $this->service->generateRecoveryCode($user);
+
+            $this->service->sendRecoveryMail($user, $code);
+
+            return Responses::ok([]);
+        });
+    }
+
+    public function resetPassword(ResetPasswordRequest $request)
+    {
+        return DB::transaction(function() use ($request){
+            $user = $this->service->getUserByRecoveryTokenOrFail($request->token, $request->email);
+
+            $user = $this->service->updateUserPassword($user, $request->password);
+
+            $content = new $this->resource($user);
+
+            return Responses::updated($content);
         });
     }
 }

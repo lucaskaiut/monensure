@@ -46,7 +46,7 @@ trait CoreService
         return $model->delete();
     }
 
-    public function findOneBy(string $key, mixed $value): Model
+    public function findOneBy(string $key, mixed $value): ?Model
     {
         $model = $this->model::where($key, $value)->first();
 

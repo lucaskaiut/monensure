@@ -16,6 +16,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/user/login', [UserController::class, 'login'])->name('user.login');
-Route::post('/user/register', [UserController::class, 'register'])->name('user.register');
+Route::controller(UserController::class)->group(function (){
+    Route::post('/user/reset-password', 'resetPassword')->name('user.reset.password');
+    Route::post('/user/forgot-password', 'forgotPassword')->name('user.forgot.password');
+    Route::post('/user/login', 'login')->name('user.login');
+    Route::post('/user/register', 'register')->name('user.register');
+});
+
 Route::post('/file/upload', [FileController::class, 'upload'])->name('file.upload');

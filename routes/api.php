@@ -16,5 +16,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('/user/login', [UserController::class, 'login'])->name('user.login');
 Route::post('/user/register', [UserController::class, 'register'])->name('user.register');
 Route::post('/file/upload', [FileController::class, 'upload'])->name('file.upload');

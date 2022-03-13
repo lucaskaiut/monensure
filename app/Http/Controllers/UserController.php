@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RegisterUserRequest;
+use App\Http\Requests\UserLoginRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Responses;
 use App\Http\Validators\UserValidator;
@@ -10,7 +11,9 @@ use App\Interfaces\ControllerInterface;
 use App\Services\GroupService;
 use App\Services\UserService;
 use App\Traits\CoreController;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller implements ControllerInterface
 {
@@ -34,6 +37,21 @@ class UserController extends Controller implements ControllerInterface
             $content = new $this->resource($user);
 
             return Responses::created($content);
+        });
+    }
+
+    public function login(UserLoginRequest $request)
+    {
+        return DB::transaction(function() use ($request){
+            $user = $this->service->findOneBy('email', $request->email);
+
+            throw_unless($user, new ModelNotFoundException("Usuário não encontrado"));
+
+            throw_unless(Hash::check($request->password, $user->password), new ModelNotFoundException("Usuário não encontrado"));
+
+            $token = $user->createToken('access_token', []);
+
+            return Responses::created(['token' => $token->plainTextToken]);
         });
     }
 }

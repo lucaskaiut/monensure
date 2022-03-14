@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CustomValidationException;
+use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\RegisterUserRequest;
 use App\Http\Requests\ResetPasswordRequest;
@@ -80,6 +82,23 @@ class UserController extends Controller implements ControllerInterface
             $user = $this->service->getUserByRecoveryTokenOrFail($request->token, $request->email);
 
             $user = $this->service->updateUserPassword($user, $request->password);
+
+            $content = new $this->resource($user);
+
+            return Responses::updated($content);
+        });
+    }
+
+    public function changePassword(string $id, ChangePasswordRequest $request)
+    {
+        return DB::transaction(function() use ($id, $request){
+            $user = $this->service->find($id);
+
+            throw_unless($user, new ModelNotFoundException("Usuário não encontrado"));
+
+            throw_unless(Hash::check($request->password, $user->password), new CustomValidationException("Senha inválida"));
+
+            $user = $this->service->updateUserPassword($user, $request->new_password);
 
             $content = new $this->resource($user);
 

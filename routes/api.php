@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::apiResource('supplier', SupplierController::class)->parameters(['supplier' => 'id'])->middleware('auth:sanctum');
 Route::apiResource('category', CategoryController::class)->parameters(['category' => 'id'])->middleware('auth:sanctum');
 
 Route::controller(UserController::class)->group(function (){

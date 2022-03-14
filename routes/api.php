@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -16,10 +17,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::controller(UserController::class)->group(function (){
-    Route::apiResource('user', UserController::class)->parameters(['user' => 'id']);
+Route::apiResource('category', CategoryController::class)->parameters(['category' => 'id'])->middleware('auth:sanctum');
 
-    Route::put('/user/{id}/change-password', 'changePassword')->name('user.change.password');
+Route::controller(UserController::class)->group(function (){
+    Route::apiResource('user', UserController::class)->parameters(['user' => 'id'])->middleware('auth:sanctum');
+
+    Route::put('/user/{id}/change-password', 'changePassword')->name('user.change.password')->middleware('auth:sanctum');
     Route::post('/user/reset-password', 'resetPassword')->name('user.reset.password');
     Route::post('/user/forgot-password', 'forgotPassword')->name('user.forgot.password');
     Route::post('/user/login', 'login')->name('user.login');

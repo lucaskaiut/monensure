@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::controller(UserController::class)->group(function (){
+    Route::apiResource('user', UserController::class)->parameters(['user' => 'id']);
+
     Route::post('/user/reset-password', 'resetPassword')->name('user.reset.password');
     Route::post('/user/forgot-password', 'forgotPassword')->name('user.forgot.password');
     Route::post('/user/login', 'login')->name('user.login');

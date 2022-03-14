@@ -33,9 +33,10 @@ class UserController extends Controller implements ControllerInterface
     {
         return DB::transaction(function() use ($request) {
             $group_name = $request->group_name;
+            
             $group = (new GroupService)->create(['name' => $group_name]);
 
-            $user = $this->service->create(array_merge(['group_id' => $group->id], $request->except('group_name', 'password_confirmation')));
+            $user = $group->users()->create($request->except('group_name', 'password_confirmation'));
 
             $content = new $this->resource($user);
 

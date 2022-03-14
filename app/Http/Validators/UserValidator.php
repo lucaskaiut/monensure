@@ -39,6 +39,7 @@ final class UserValidator implements ValidatorInterface
                 'confirmed'
             ],
             'phone' => [
+                'required',
                 'min:11',
                 'max:11',
             ],
@@ -58,6 +59,7 @@ final class UserValidator implements ValidatorInterface
             'password.min' => 'O campo senha deve ter entre 4 e 32 caracteres.',
             'password.max' => 'O campo senha deve ter entre 4 e 32 caracteres.',
             'password.confirmed' => 'O campo senha precisa de confirmação.',
+            'required' => 'O campo telefone é obrigatório',
             'phone.min' => 'O campo  telefone deve ter 11 caracteres',
             'phone.max' => 'O campo  telefone deve ter 11 caracteres',
         ];

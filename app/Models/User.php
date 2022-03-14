@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Scopes\GroupScope;
 use App\Traits\UuidKey;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -58,5 +59,8 @@ class User extends Authenticatable
         static::creating(function($user){
             $user->password = Hash::make($user->password);
         });
+
+        static::addGlobalScope(new GroupScope(auth('sanctum')->user()));
     }
+
 }

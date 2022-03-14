@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Scopes\GroupScope;
 use App\Traits\UuidKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,5 +23,10 @@ class Supplier extends Model
     public function bills()
     {
         return $this->hasMany(Bill::class);
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new GroupScope(auth('sanctum')->user()));
     }
 }

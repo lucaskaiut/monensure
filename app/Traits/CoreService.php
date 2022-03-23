@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use Spatie\QueryBuilder\QueryBuilder;
 use Illuminate\Database\Eloquent\Model;
 
 trait CoreService
@@ -18,8 +19,8 @@ trait CoreService
 
     public function list()
     {
-        $models = $this->model::all();
-
+        $models = QueryBuilder::for($this->model)->allowedFilters(['firstname'])->get();
+ 
         return $models;
     }
 

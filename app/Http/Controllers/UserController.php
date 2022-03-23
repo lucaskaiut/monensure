@@ -57,7 +57,7 @@ class UserController extends Controller implements ControllerInterface
 
             $token = $user->createToken('access_token', []);
 
-            return Responses::created(['token' => $token->plainTextToken]);
+            return Responses::created(['token' => $token->plainTextToken, 'user' => new UserResource($user)]);
         });
     }
 

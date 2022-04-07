@@ -17,6 +17,7 @@ use App\Services\UserService;
 use App\Traits\CoreController;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -83,6 +84,8 @@ class UserController extends Controller implements ControllerInterface
 
             $user = $this->service->updateUserPassword($user, $request->password);
 
+            $this->service->deleteToken($request->token, $request->email);
+
             $content = new $this->resource($user);
 
             return Responses::updated($content);
@@ -103,6 +106,17 @@ class UserController extends Controller implements ControllerInterface
             $content = new $this->resource($user);
 
             return Responses::updated($content);
+        });
+    }
+
+    public function validateToken(Request $request)
+    {
+        return DB::transaction(function() use ($request){
+            $user = $this->service->getUserByRecoveryTokenOrFail($request->token, $request->email);
+
+            throw_unless($user, new ModelNotFoundException("Código inválido ou expirado"));
+
+            return Responses::ok([]);
         });
     }
 }

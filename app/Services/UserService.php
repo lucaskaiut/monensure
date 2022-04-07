@@ -41,19 +41,24 @@ class UserService implements ServiceInterface
     {
         $passwordReset = PasswordReset::where('token', $token)->where('email', $email)->first();
 
+        throw_unless($passwordReset, new UnprocessableEntityHttpException("Token inválido ou expirado"));
+
         $now = Carbon::now();
 
         $tokenValidThrough = Carbon::createFromFormat('Y-m-d H:i:s', $passwordReset->created_at->format('Y-m-d H:i:s'));
 
-        throw_if($tokenValidThrough->addHours() < $now, new UnprocessableEntityHttpException("Não foi possível processar sua solicitação"));
+        throw_if($tokenValidThrough->addHours() < $now, new UnprocessableEntityHttpException("Token inválido ou expirado"));
 
-        throw_unless($passwordReset, new UnprocessableEntityHttpException("Não foi possível processar sua solicitação"));
+        throw_unless($passwordReset, new UnprocessableEntityHttpException("Token inválido ou expirado"));
 
         $user = User::where('email', $passwordReset->email)->first();
 
-        PasswordReset::where('token', $token)->where('email', $email)->delete();
-
         return $user;
+    }
+
+    public function deleteToken(string $token, string $email)
+    {
+        PasswordReset::where('token', $token)->where('email', $email)->delete();
     }
 
     public function updateUserPassword(User $user, string $password)

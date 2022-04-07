@@ -26,6 +26,7 @@ Route::controller(UserController::class)->group(function (){
 
     Route::put('/user/{id}/change-password', 'changePassword')->name('user.change.password')->middleware('auth:sanctum');
     Route::post('/user/reset-password', 'resetPassword')->name('user.reset.password');
+    Route::post('/user/validate-token', 'validateToken')->name('user.validate.token');
     Route::post('/user/forgot-password', 'forgotPassword')->name('user.forgot.password');
     Route::post('/user/login', 'login')->name('user.login');
     Route::post('/user/register', 'register')->name('user.register');

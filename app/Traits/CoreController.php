@@ -30,7 +30,7 @@ trait CoreController
 
     public function index()
     {
-        $models = $this->service->list();
+        $models = $this->service->paginate(request()->query('per_page'));
 
         $content = $this->resource::collection($models);
 

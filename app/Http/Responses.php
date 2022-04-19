@@ -2,6 +2,8 @@
 
 namespace App\Http;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 class Responses
 {
 
@@ -36,6 +38,15 @@ class Responses
             'message' => 'Sucesso',
             'data' => $content
         ];
+
+        if(is_a($content->resource, LengthAwarePaginator::class)){
+            $response['pagination'] = [
+                'per_page' => $content->resource->perPage(),
+                'total' => $content->resource->total(),
+                'last_page' => $content->resource->lastPage(),
+                'current_page' => $content->resource->currentPage()
+            ];
+        } 
 
         return response()->json($response);
     }

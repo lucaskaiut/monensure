@@ -9,6 +9,13 @@ trait CoreService
 
     public $model;
 
+    public function paginate(?int $items_per_page)
+    {
+        $models = $this->model::paginate($items_per_page ?? 10);
+
+        return $models;
+    }
+
     public function create(array $data): Model
     {
         $model = $this->model::create($data);

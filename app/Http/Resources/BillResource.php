@@ -19,6 +19,7 @@ class BillResource extends JsonResource
             'category' => new CategoryResource($this->category),
             'group' => new GroupResource($this->group),
             'supplier' => new SupplierResource($this->supplier),
+            'user' => new UserResource($this->user),
             'reference_at' => $this->reference_at,
             'description' => $this->description,
             'amount' => $this->amount,

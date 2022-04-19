@@ -30,6 +30,8 @@ class UserController extends Controller implements ControllerInterface
         $this->service = app(UserService::class);
         $this->resource = UserResource::class;
         $this->requestValidator = new UserValidator();
+
+        $this->authorizeResource($this->service->model, 'id');
     }
 
     public function register(RegisterUserRequest $request)

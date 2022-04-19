@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Supplier;
 use App\Models\User;
 use App\Observers\GroupObserver;
+use App\Observers\UserObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -29,7 +30,7 @@ class EventServiceProvider extends ServiceProvider
         User::class => [GroupObserver::class],
         Category::class => [GroupObserver::class],
         Supplier::class => [GroupObserver::class],
-        Bill::class => [GroupObserver::class],
+        Bill::class => [GroupObserver::class, UserObserver::class],
     ];
 
     /**

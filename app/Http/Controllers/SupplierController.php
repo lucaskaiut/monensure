@@ -18,5 +18,7 @@ class SupplierController extends Controller implements ControllerInterface
         $this->resource = SupplierResource::class;
         $this->service = app(SupplierService::class);
         $this->requestValidator = new SupplierValidator();
+
+        $this->authorizeResource($this->service->model, 'id');
     }
 }

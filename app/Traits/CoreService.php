@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 trait CoreService
 {
 
-    private $model;
+    public $model;
 
     public function create(array $data): Model
     {
         $model = $this->model::create($data);
 
-        return $model;
+        return $model->refresh();
     }
 
     public function list()
@@ -36,7 +36,7 @@ trait CoreService
 
         $model->update($data);
 
-        return $model;
+        return $model->refresh();
     }
 
     public function delete(string $id)

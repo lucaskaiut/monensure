@@ -14,6 +14,7 @@ trait CoreController
     private $requestValidator;
     private $service;
     private $resource;
+    private $listResource;
 
     public function store(Request $request)
     {
@@ -32,7 +33,7 @@ trait CoreController
     {
         $models = $this->service->paginate(request()->query('per_page'));
 
-        $content = $this->resource::collection($models);
+        $content = $this->listResource ? $this->listResource::collection($models) : $this->resource::collection($models);
 
         return Responses::ok($content);
     }

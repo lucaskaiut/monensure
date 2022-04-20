@@ -91,4 +91,9 @@ class BillPolicy
     {
         return $user->group_id === $bill->group_id;
     }
+
+    public function pay(User $user, Bill $bill)
+    {
+        return $user->group_id === $bill->group_id;
+    }
 }

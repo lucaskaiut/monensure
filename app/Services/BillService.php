@@ -6,6 +6,7 @@ use App\Interfaces\ServiceInterface;
 use App\Models\Bill;
 use App\Traits\CoreService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\UnauthorizedException;
 
 class BillService implements ServiceInterface
 {
@@ -25,5 +26,18 @@ class BillService implements ServiceInterface
         $bill = $this->model::create($data);
 
         return $bill->refresh();
+    }
+
+    public function pay($id)
+    {
+        $bill = $this->find($id);
+
+        throw_if(auth('sanctum')->user()->cannot('pay', $bill), new UnauthorizedException("Não foi possível executar essa ação"));
+
+        throw_if($bill->is_paid, new UnauthorizedException("Essa conta já foi paga"));
+
+        $bill->update(['is_paid' => true]);
+    
+        return $bill;
     }
 }

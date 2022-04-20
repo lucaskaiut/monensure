@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
             $table->string('name');
             $table->string('description')->nullable();
+            $table->string('icon')->nullable();
             $table->timestamps();
         });
     }

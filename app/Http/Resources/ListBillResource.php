@@ -16,7 +16,10 @@ class ListBillResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'category' => $this->category->name,
+            'category' => [
+                'name' => $this->category->name,
+                'icon' => $this->category->icon
+            ],
             'supplier' => $this->supplier->name,
             'description' => $this->description,
             'amount' => $this->amount,

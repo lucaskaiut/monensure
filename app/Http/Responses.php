@@ -7,32 +7,46 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class Responses
 {
 
-    public static function created($content)
+    public static function created($content, array $additional = [])
     {
         $response = [
             'message' => 'Registro criado com sucesso',
             'data' => $content
         ];
 
+        if(sizeof($additional)){
+            $response['additional'] = $additional;
+        }
+
         return response()->json($response, 201);
     }
 
-    public static function updated($content)
+    public static function updated($content, array $additional = [])
     {
         $response = [
             'message' => 'Registro atualizado com sucesso',
             'data' => $content
         ];
 
+        if(sizeof($additional)){
+            $response['additional'] = $additional;
+        }
+
         return response()->json($response, 202);
     }
 
-    public static function deleted()
+    public static function deleted(array $additional = [])
     {
-        return response()->json(['data' => [], 'message' => 'Registro apagado com successo'], 202);
+        $response = ['data' => [], 'message' => 'Registro apagado com successo'];
+
+        if(sizeof($additional)){
+            $response['additional'] = $additional;
+        }
+
+        return response()->json($response, 202);
     }
 
-    public static function ok($content)
+    public static function ok($content, array $additional = [])
     {
         $response = [
             'message' => 'Sucesso',
@@ -48,14 +62,22 @@ class Responses
             ];
         } 
 
+        if(sizeof($additional)){
+            $response['additional'] = $additional;
+        }
+
         return response()->json($response);
     }
 
-    public static function error($message, $code)
+    public static function error($message, $code, array $additional = [])
     {
         $response = [
             'message' => $message ?? 'Algo deu errado, tente novamente mais tarde',
         ];
+
+        if(sizeof($additional)){
+            $response['additional'] = $additional;
+        }
 
         return response()->json($response, $code);
     }

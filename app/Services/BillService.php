@@ -28,6 +28,13 @@ class BillService implements ServiceInterface
         return $bill->refresh();
     }
 
+    public function paginate(?int $items_per_page)
+    {
+        $bills = $this->model::paginate($items_per_page ?? 10);
+
+        return ['bills' => $bills, 'total' => $bills->sum('amount')];
+    }
+
     public function pay($id)
     {
         $bill = $this->find($id);

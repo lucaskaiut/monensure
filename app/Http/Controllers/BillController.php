@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\BillResource;
-use App\Http\Resources\CategoryResource;
 use App\Http\Resources\ListBillResource;
 use App\Http\Responses;
 use App\Http\Validators\BillValidator;
@@ -23,6 +22,15 @@ class BillController extends Controller
         $this->requestValidator = new BillValidator();
 
         $this->authorizeResource($this->service->model, 'id');
+    }
+
+    public function index()
+    {
+        $response = $this->service->paginate(request()->query('per_page'));
+
+        $content = $this->listResource::collection($response['bills']);
+
+        return Responses::ok($content, ['total' => $response['total']]);
     }
 
     public function pay($id)

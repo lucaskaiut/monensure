@@ -32,7 +32,7 @@ class BillService implements ServiceInterface
     {
         $bills = $this->model::paginate($items_per_page ?? 10);
 
-        return ['bills' => $bills, 'total' => $bills->sum('amount')];
+        return ['bills' => $bills, 'total' => Bill::all()->sum('amount')];
     }
 
     public function pay($id)

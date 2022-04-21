@@ -9,6 +9,7 @@ use App\Http\Validators\BillValidator;
 use App\Services\BillService;
 use App\Traits\CoreController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BillController extends Controller
 {

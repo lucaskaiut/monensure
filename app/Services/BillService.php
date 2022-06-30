@@ -4,11 +4,12 @@ namespace App\Services;
 
 use App\Interfaces\ServiceInterface;
 use App\Models\Bill;
+use App\Models\Sorts\SupplierNameSort;
 use App\Traits\CoreService;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\UnauthorizedException;
 use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class BillService implements ServiceInterface
@@ -46,7 +47,9 @@ class BillService implements ServiceInterface
 
         $filters = [
             'supplier_id',
-            'category_id'
+            'category_id',
+            'is_paid',
+            'is_credit_card'
         ];
 
         return array_merge($scopes, $filters);
@@ -58,6 +61,11 @@ class BillService implements ServiceInterface
 
         $bills = QueryBuilder::for(Bill::class)
             ->allowedFilters($filters)
+            ->allowedSorts([
+                AllowedSort::custom('supplier', new SupplierNameSort(), 'suppliers.name'),
+                'due_at',
+                '-due_at'
+            ])
             ->paginate($items_per_page);
 
         $total = QueryBuilder::for(Bill::class)

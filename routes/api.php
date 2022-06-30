@@ -5,6 +5,8 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BillController;
+use App\Models\Bill;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

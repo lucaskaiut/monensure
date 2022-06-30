@@ -18,7 +18,8 @@ class GroupScope implements Scope
 
     public function apply(Builder $builder, Model $model)
     {
-        if($this->user)
-            $builder->where('group_id', $this->user->group_id);
+        if($this->user) {
+            $builder->where("{$model->getTable()}.group_id", $this->user->group_id);
+        }
     }
 }

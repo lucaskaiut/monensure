@@ -75,7 +75,7 @@ class UserController extends Controller implements ControllerInterface
 
             $this->service->sendRecoveryMail($user, $code);
 
-            return Responses::ok([]);
+            return Responses::ok(['user' => new UserResource($user)]);
         });
     }
 
@@ -118,7 +118,18 @@ class UserController extends Controller implements ControllerInterface
 
             throw_unless($user, new ModelNotFoundException("Código inválido ou expirado"));
 
-            return Responses::ok([]);
+            return Responses::ok(new UserResource($user));
+        });
+    }
+
+    public function me()
+    {
+        return DB::transaction(function(){
+            $user = auth('sanctum')->user();
+
+            throw_unless($user, new ModelNotFoundException("Usuário não encontrado"));
+
+            return Responses::ok(new UserResource($user));
         });
     }
 }

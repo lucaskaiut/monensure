@@ -36,6 +36,8 @@ Route::controller(UserController::class)->group(function (){
     Route::post('/user/forgot-password', 'forgotPassword')->name('user.forgot.password');
     Route::post('/user/login', 'login')->name('user.login');
     Route::post('/user/register', 'register')->name('user.register');
+    Route::post('/user/me', 'me')->name('user.me');
+
 });
 
 Route::post('/file/upload', [FileController::class, 'upload'])->name('file.upload');

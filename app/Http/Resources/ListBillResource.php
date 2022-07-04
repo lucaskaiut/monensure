@@ -29,6 +29,7 @@ class ListBillResource extends JsonResource
             'amount' => $this->amount,
             'due_at' => $this->due_at,
             'is_paid' => $this->is_paid,
+            'type' => $this->type,
         ];
     }
 }

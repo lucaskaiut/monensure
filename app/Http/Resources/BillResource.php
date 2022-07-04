@@ -27,6 +27,7 @@ class BillResource extends JsonResource
             'original_due_at' => $this->original_due_at,
             'is_paid' => $this->is_paid,
             'is_credit_card' => $this->is_credit_card,
+            'type' => $this->type,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];

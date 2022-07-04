@@ -45,6 +45,10 @@ final class BillValidator implements ValidatorInterface
             'is_credit_card' => [
                 'boolean',
             ],
+            'type' => [
+                'required',
+                Rule::in(['pay', 'receive']),
+            ]
         ];
 
         $messages = [

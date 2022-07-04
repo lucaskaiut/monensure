@@ -68,11 +68,17 @@ class BillService implements ServiceInterface
             ])
             ->paginate($items_per_page);
 
-        $total = QueryBuilder::for(Bill::class)
+        $totalPay = QueryBuilder::for(Bill::class)
             ->allowedFilters($filters)
+            ->where('type', 'pay')
             ->sum('amount');
 
-        return ['bills' => $bills, 'total' => $total];
+        $totalReceive = QueryBuilder::for(Bill::class)
+            ->allowedFilters($filters)
+            ->where('type', 'receive')
+            ->sum('amount');
+
+        return ['bills' => $bills, 'totalPay' => $totalPay, 'totalReceive' => $totalReceive];
     }
 
     public function pay($id)

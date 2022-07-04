@@ -31,12 +31,12 @@ class BillController extends Controller
 
         $content = $this->listResource::collection($response['bills']);
 
-        return Responses::ok($content, ['total' => $response['total']]);
+        return Responses::ok($content, ['totalPay' => $response['totalPay'], 'totalReceive' => $response['totalReceive']]);
     }
 
     public function pay($id)
     {
-        return DB::transaction(function() use ($id) {
+        return DB::transaction(function () use ($id) {
             $bill = $this->service->pay($id);
 
             $content = new $this->resource($bill);

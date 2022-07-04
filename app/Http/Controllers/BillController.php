@@ -9,7 +9,7 @@ use App\Http\Validators\BillValidator;
 use App\Services\BillService;
 use App\Traits\CoreController;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 class BillController extends Controller
 {
@@ -43,5 +43,12 @@ class BillController extends Controller
 
             return Responses::updated($content);
         });
+    }
+
+    public function payBills(Request $request)
+    {
+        $this->service->payBills($request->bills);
+
+        return Responses::updated([]);
     }
 }

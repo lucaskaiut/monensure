@@ -21,7 +21,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::put('bill/{id}/pay', [BillController::class, 'pay'])->name('bill.pay')->middleware('auth:sanctum');
+Route::put('bill/pay/{id}', [BillController::class, 'pay'])->name('bill.pay')->middleware('auth:sanctum');
+Route::put('bill/pay-bills', [BillController::class, 'payBills'])->name('bills.pay')->middleware('auth:sanctum');
 
 Route::apiResource('bill', BillController::class)->parameters(['bill' => 'id'])->middleware('auth:sanctum');
 Route::apiResource('supplier', SupplierController::class)->parameters(['supplier' => 'id'])->middleware('auth:sanctum');

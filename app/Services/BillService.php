@@ -87,4 +87,9 @@ class BillService implements ServiceInterface
 
         return $bill;
     }
+
+    public function payBills(array $bills)
+    {
+        $bills = Bill::whereIn('id', $bills)->update(['is_paid' => 1]);
+    }
 }

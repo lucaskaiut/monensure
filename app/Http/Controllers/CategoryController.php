@@ -17,7 +17,5 @@ class CategoryController extends Controller implements ControllerInterface
         $this->service = app(CategoryService::class);
         $this->resource = CategoryResource::class;
         $this->requestValidator = new CategoryValidator();
-
-        $this->authorizeResource($this->service->model, 'id');
     }
 }

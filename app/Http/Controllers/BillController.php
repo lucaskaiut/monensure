@@ -21,8 +21,6 @@ class BillController extends Controller
         $this->resource = BillResource::class;
         $this->listResource = ListBillResource::class;
         $this->requestValidator = new BillValidator();
-
-        $this->authorizeResource($this->service->model, 'id');
     }
 
     public function index()

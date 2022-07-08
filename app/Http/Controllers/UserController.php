@@ -30,8 +30,6 @@ class UserController extends Controller implements ControllerInterface
         $this->service = app(UserService::class);
         $this->resource = UserResource::class;
         $this->requestValidator = new UserValidator();
-
-        $this->authorizeResource($this->service->model, 'id');
     }
 
     public function register(RegisterUserRequest $request)
@@ -58,7 +56,7 @@ class UserController extends Controller implements ControllerInterface
 
             throw_unless(Hash::check($request->password, $user->password), new ModelNotFoundException("Usuário não encontrado"));
 
-            $token = $user->createToken('access_token', []);
+            $token = $user->createToken('access_token', ['*']);
 
             return Responses::created(['token' => $token->plainTextToken, 'user' => new UserResource($user)]);
         });

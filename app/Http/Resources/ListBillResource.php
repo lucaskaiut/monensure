@@ -19,11 +19,15 @@ class ListBillResource extends JsonResource
             'category' => [
                 'id' => $this->category->id,
                 'name' => $this->category->name,
+                'value' => $this->category->id,
+                'label' => $this->category->name,
                 'icon' => $this->category->icon
             ],
             'supplier' => [
                 'id' => $this->supplier->id,
                 'name' => $this->supplier->name,
+                'value' => $this->supplier->id,
+                'label' => $this->supplier->name,
             ],
             'description' => $this->description,
             'amount' => $this->amount,

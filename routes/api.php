@@ -6,7 +6,11 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BillController;
 use App\Models\Bill;
+use App\Models\Category;
+use App\Models\Group;
 use App\Models\Supplier;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -42,3 +46,48 @@ Route::controller(UserController::class)->group(function (){
 });
 
 Route::post('/file/upload', [FileController::class, 'upload'])->name('file.upload');
+
+Route::post('/create-suppliers', function () {
+    $suppliers = request()->suppliers;
+
+    $group = Group::where('created_at', '>=', Carbon::now()->startOfDay()->format('Y-m-d H:i:s'))->first();
+
+    foreach ($suppliers as $name) {
+        Supplier::create([
+            'name' => $name,
+            'group_id' => $group->id,
+        ]);
+    }
+});
+
+Route::post('/create-bills', function () {
+    $bills = request()->bills;
+
+    $group = Group::where('created_at', '>=', Carbon::now()->startOfDay()->format('Y-m-d H:i:s'))->first();
+
+    $user = User::where('email', 'lucas.kaiut@gmail.com')->first();
+
+    foreach ($bills as $billData) {
+        $supplier = Supplier::where('name', $billData['supplier'])->first();
+
+        $category = Category::where('name', $billData['category'])->first();
+
+        unset($billData['category']);
+
+        unset($billData['supplier']);
+
+        $billData['category_id'] = $category->id;
+
+        $billData['supplier_id'] = $supplier->id;
+
+        $billData['group_id'] = $group->id;
+
+        $billData['is_paid'] = $billData['is_paid'] == 'Sim' ? true : false;
+
+        $billData['is_credit_card'] = $billData['is_credit_card'] == 'Sim' ? true : false;
+
+        $billData['user_id'] = $user->id;
+
+        Bill::create($billData);
+    }
+});

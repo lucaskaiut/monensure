@@ -6,6 +6,7 @@ use App\Interfaces\ServiceInterface;
 use App\Models\Bill;
 use App\Models\Sorts\SupplierNameSort;
 use App\Traits\CoreService;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\UnauthorizedException;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -21,15 +22,74 @@ class BillService implements ServiceInterface
         $this->model = Bill::class;
     }
 
-    public function create(array $data): Model
+    public function create(array $data)
     {
-        (new SupplierService())->find($data['supplier_id']);
+        if (!empty($data['installments'])) {
+            $this->createManyBills($data);
+        } else {
+            $this->model::create($data);
+        }
+    }
 
-        (new CategoryService())->find($data['category_id']);
+    private function createManyBills(array $data)
+    {
+        $installments = $data['installments'];
 
-        $bill = $this->model::create($data);
+        unset($data['installments']);
 
-        return $bill->refresh();
+        $totals = $this->installmentValues($data['amount'], $installments);
+
+        $description = $data['description'];
+
+        $due_at = $data['due_at'];
+
+        $original_due_at = $data['original_due_at'];
+ 
+        for ($i = 0; $i < $installments; $i++) {
+            $currentInstallment = $i + 1;
+
+            $data['amount'] = $totals['installmentAmount'];
+
+            if ($currentInstallment == $installments) {
+                $data['amount'] = $totals['lastInstallmentAmount'];
+            }
+
+            $data['description'] = $this->installmentDescription($description, $installments, $currentInstallment);
+
+            $data['due_at'] = $this->installmentDue($due_at, $installments, $currentInstallment);
+
+            $data['original_due_at'] = $this->installmentDue($original_due_at, $installments, $currentInstallment);
+
+            $this->model::create($data);
+        }
+    }
+
+    private function installmentDue(string $due_at, int $installments, int $installment): string
+    {
+        return Carbon::createFromFormat('Y-m-d', $due_at)->addMonth($installment - 1)->format('Y-m-d');
+    }
+
+    private function installmentDescription(string $description, int $installments, int $installment): string
+    {
+        return "{$description} {$installment}/{$installments}";
+    }
+
+    private function installmentValues(float $total, int $installments): array
+    {
+        $installmentAmount = $total / $installments;
+
+        $totalInstallments = $installmentAmount * $installments;
+
+        $lastInstallmentAmount = $installmentAmount;
+
+        if ($totalInstallments < $total) {
+            $lastInstallmentAmount = $totalInstallments + ($total - $totalInstallments);
+        }
+
+        return [
+            'installmentAmount' => $installmentAmount,
+            'lastInstallmentAmount' => $lastInstallmentAmount,
+        ];
     }
 
     private function filters(): array

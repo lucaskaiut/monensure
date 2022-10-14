@@ -14,7 +14,22 @@ class Bill extends Model
     use HasFactory, UuidKey;
 
     public $incrementing = false;
-    protected $guarded = [];
+
+    protected $fillable = [
+        'user_id',
+        'category_id',
+        'group_id',
+        'supplier_id',
+        'reference_at',
+        'description',
+        'amount',
+        'due_at',
+        'original_due_at',
+        'is_paid',
+        'is_credit_card',
+        'type',
+    ];
+    
     protected $keyType = 'string';
 
     public function user()

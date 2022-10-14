@@ -32,6 +32,17 @@ class BillController extends Controller
         return Responses::ok($content, ['totalPay' => $response['totalPay'], 'totalReceive' => $response['totalReceive']]);
     }
 
+    public function store(Request $request)
+    {
+        $data = $this->validateOrFail($request->all());
+
+        return DB::transaction(function () use ($data) {
+            $this->service->create($data);
+
+            return Responses::created([]);
+        });
+    }
+
     public function pay($id)
     {
         return DB::transaction(function () use ($id) {

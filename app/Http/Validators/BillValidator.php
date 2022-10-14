@@ -48,7 +48,12 @@ final class BillValidator implements ValidatorInterface
             'type' => [
                 'required',
                 Rule::in(['pay', 'receive']),
-            ]
+            ],
+            'installments' => [
+                'numeric',
+                'sometimes',
+                'nullable',
+            ],
         ];
 
         $messages = [

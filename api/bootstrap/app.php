@@ -30,6 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([
+        __DIR__.'/../app/Modules/Financial/Console/Commands',
+    ])
     ->withEvents(discover: [
         __DIR__.'/../app/Modules/Webhook/Listeners',
     ])

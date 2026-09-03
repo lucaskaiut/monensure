@@ -23,7 +23,7 @@ class RecurrenceTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_generate_upcoming_payables_creates_three_months(): void
+    public function test_generate_upcoming_payables_creates_twelve_months(): void
     {
         Carbon::setTestNow('2026-09-02');
 
@@ -38,7 +38,7 @@ class RecurrenceTest extends TestCase
 
         $generated = app(RecurrenceService::class)->generateUpcomingPayables();
 
-        $this->assertSame(3, $generated);
+        $this->assertSame(12, $generated);
 
         $dueDates = Payable::query()
             ->withoutTenancy()
@@ -48,7 +48,20 @@ class RecurrenceTest extends TestCase
             ->map(fn ($d) => $d->toDateString())
             ->all();
 
-        $this->assertSame(['2026-09-10', '2026-10-10', '2026-11-10'], $dueDates);
+        $this->assertSame([
+            '2026-09-10',
+            '2026-10-10',
+            '2026-11-10',
+            '2026-12-10',
+            '2027-01-10',
+            '2027-02-10',
+            '2027-03-10',
+            '2027-04-10',
+            '2027-05-10',
+            '2027-06-10',
+            '2027-07-10',
+            '2027-08-10',
+        ], $dueDates);
     }
 
     public function test_generate_is_idempotent(): void
@@ -68,7 +81,7 @@ class RecurrenceTest extends TestCase
         $secondRun = $service->generateUpcomingPayables();
 
         $this->assertSame(0, $secondRun);
-        $this->assertSame(3, Payable::query()->withoutTenancy()->where('tenant_id', $tenant->getKey())->count());
+        $this->assertSame(12, Payable::query()->withoutTenancy()->where('tenant_id', $tenant->getKey())->count());
     }
 
     public function test_generate_respects_tenant_isolation_and_inactive_recurrences(): void
@@ -83,7 +96,7 @@ class RecurrenceTest extends TestCase
 
         app(RecurrenceService::class)->generateUpcomingPayables();
 
-        $this->assertSame(3, Payable::query()->withoutTenancy()->where('tenant_id', $tenantA->getKey())->count());
+        $this->assertSame(12, Payable::query()->withoutTenancy()->where('tenant_id', $tenantA->getKey())->count());
         $this->assertSame(0, Payable::query()->withoutTenancy()->where('tenant_id', $tenantB->getKey())->count());
     }
 }

@@ -80,7 +80,7 @@ export function RecurrenceForm({ mode, defaultValues, submitting, onSubmit }: Re
             <SwitchField
               name="generate_automatically"
               label="Gerar lançamentos automaticamente"
-              hint="O sistema gera os próximos 3 meses de lançamentos diariamente."
+              hint="O sistema gera os próximos 12 meses de lançamentos diariamente."
             />
           </Section>
 

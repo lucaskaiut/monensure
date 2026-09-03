@@ -9,7 +9,7 @@ class GenerateRecurringPayablesCommand extends Command
 {
     protected $signature = 'financial:generate-recurring-payables';
 
-    protected $description = 'Gera os lançamentos futuros (3 meses) das recorrências financeiras ativas';
+    protected $description = 'Gera os lançamentos futuros (1 ano) das recorrências financeiras ativas';
 
     public function handle(RecurrenceService $recurrences): int
     {

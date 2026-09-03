@@ -19,6 +19,11 @@ class RecurrenceService
 {
     use ResolvesRelations;
 
+    /**
+     * Meses à frente para os quais os lançamentos são materializados.
+     */
+    public const GENERATION_HORIZON_MONTHS = 12;
+
     public function __construct(private readonly FinancialAuditService $audit) {}
 
     public function paginate(int $perPage = 15, ?string $search = null): LengthAwarePaginator
@@ -72,7 +77,7 @@ class RecurrenceService
     }
 
     /**
-     * Gera os lançamentos futuros (3 meses) de todas as recorrências ativas.
+     * Gera os lançamentos futuros (1 ano) de todas as recorrências ativas.
      *
      * Executado diariamente pelo job. Opera em todos os tenants — por isso
      * desativa o escopo global e vincula o tenant_id explicitamente.
@@ -80,7 +85,7 @@ class RecurrenceService
     public function generateUpcomingPayables(?Carbon $now = null): int
     {
         $now = ($now ?? now())->copy()->startOfDay();
-        $horizon = $now->copy()->addMonthsNoOverflow(3);
+        $horizon = $now->copy()->addMonthsNoOverflow(self::GENERATION_HORIZON_MONTHS);
 
         $recurrences = FinancialRecurrence::query()
             ->withoutTenancy()

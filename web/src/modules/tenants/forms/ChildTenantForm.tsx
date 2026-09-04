@@ -158,7 +158,6 @@ function EditForm({
       tenant: { name: '', document: '', email: '', phone: '', domain: '' },
       plan_id: null,
       is_complimentary: false,
-      complimentary_ends_at: null,
       ...defaultValues,
       complimentary_ends_at: toDateInput(defaultValues?.complimentary_ends_at) || null,
     },

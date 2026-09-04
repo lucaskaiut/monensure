@@ -8,6 +8,7 @@ use App\Modules\Financial\Models\Payable;
 use App\Modules\Financial\Services\RecurrenceService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\InteractsWithTenants;
 use Tests\TestCase;
 
@@ -98,5 +99,64 @@ class RecurrenceTest extends TestCase
 
         $this->assertSame(12, Payable::query()->withoutTenancy()->where('tenant_id', $tenantA->getKey())->count());
         $this->assertSame(0, Payable::query()->withoutTenancy()->where('tenant_id', $tenantB->getKey())->count());
+    }
+
+    public function test_store_generates_payables_for_active_recurrence(): void
+    {
+        Carbon::setTestNow('2026-09-02');
+
+        [$umbrella, $child] = $this->createOperationalChild();
+        Sanctum::actingAs($this->createAdmin($child));
+
+        $this->postJson('/api/financial/recurrences', [
+            'description' => 'Aluguel',
+            'default_value' => 1500,
+            'due_day' => 10,
+            'frequency' => 'mensal',
+            'active' => true,
+            'generate_automatically' => true,
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.description', 'Aluguel');
+
+        $this->assertSame(
+            12,
+            Payable::query()->withoutTenancy()->where('tenant_id', $child->getKey())->count(),
+        );
+    }
+
+    public function test_store_skips_generation_when_automatic_is_disabled(): void
+    {
+        Carbon::setTestNow('2026-09-02');
+
+        [$umbrella, $child] = $this->createOperationalChild();
+        Sanctum::actingAs($this->createAdmin($child));
+
+        $this->postJson('/api/financial/recurrences', [
+            'description' => 'Manual',
+            'default_value' => 1500,
+            'due_day' => 10,
+            'frequency' => 'mensal',
+            'active' => true,
+            'generate_automatically' => false,
+        ])->assertCreated();
+
+        $this->assertSame(0, Payable::query()->withoutTenancy()->where('tenant_id', $child->getKey())->count());
+    }
+
+    public function test_generate_endpoint_creates_payables_for_current_tenant(): void
+    {
+        Carbon::setTestNow('2026-09-02');
+
+        [$umbrella, $child] = $this->createOperationalChild();
+        Sanctum::actingAs($this->createAdmin($child));
+
+        FinancialRecurrence::factory()->forTenant($child)->create(['due_day' => 10]);
+
+        $this->postJson('/api/financial/recurrences/generate')
+            ->assertOk()
+            ->assertJsonPath('data.generated', 12);
+
+        $this->assertSame(12, Payable::query()->withoutTenancy()->where('tenant_id', $child->getKey())->count());
     }
 }

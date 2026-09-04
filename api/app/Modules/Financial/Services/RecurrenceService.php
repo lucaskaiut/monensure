@@ -53,6 +53,8 @@ class RecurrenceService
 
         $this->audit->record($actor, AuditAction::RecurrenceCreated, 'financial_recurrence', $recurrence->uuid);
 
+        $this->generateForRecurrence($recurrence->refresh());
+
         return $recurrence;
     }
 
@@ -66,7 +68,11 @@ class RecurrenceService
 
         $this->audit->record($actor, AuditAction::RecurrenceUpdated, 'financial_recurrence', $recurrence->uuid);
 
-        return $recurrence->refresh();
+        $recurrence = $recurrence->refresh();
+
+        $this->generateForRecurrence($recurrence);
+
+        return $recurrence;
     }
 
     public function delete(FinancialRecurrence $recurrence, ?User $actor = null): void
@@ -84,9 +90,6 @@ class RecurrenceService
      */
     public function generateUpcomingPayables(?Carbon $now = null): int
     {
-        $now = ($now ?? now())->copy()->startOfDay();
-        $horizon = $now->copy()->addMonthsNoOverflow(self::GENERATION_HORIZON_MONTHS);
-
         $recurrences = FinancialRecurrence::query()
             ->withoutTenancy()
             ->where('active', true)
@@ -96,22 +99,59 @@ class RecurrenceService
         $generated = 0;
 
         foreach ($recurrences as $recurrence) {
-            $due = $this->nextDueDate($recurrence, $now);
+            $generated += $this->generateForRecurrence($recurrence, $now);
+        }
 
-            while ($due->lte($horizon)) {
-                if ($this->createIfMissing($recurrence, $due)) {
-                    $generated++;
-                }
+        return $generated;
+    }
 
-                $due = $this->dueDateForMonth(
-                    $recurrence,
-                    $due->copy()->addMonthsNoOverflow($recurrence->frequency->months())->startOfMonth(),
-                );
+    /**
+     * Gera lançamentos das recorrências ativas do tenant em contexto.
+     */
+    public function generateForTenant(?Carbon $now = null): int
+    {
+        $recurrences = FinancialRecurrence::query()
+            ->where('active', true)
+            ->where('generate_automatically', true)
+            ->get();
+
+        $generated = 0;
+
+        foreach ($recurrences as $recurrence) {
+            $generated += $this->generateForRecurrence($recurrence, $now);
+        }
+
+        return $generated;
+    }
+
+    /**
+     * Materializa lançamentos futuros (até 1 ano) de uma recorrência.
+     */
+    public function generateForRecurrence(FinancialRecurrence $recurrence, ?Carbon $now = null): int
+    {
+        if (! $recurrence->active || ! $recurrence->generate_automatically) {
+            return 0;
+        }
+
+        $now = ($now ?? now())->copy()->startOfDay();
+        $horizon = $now->copy()->addMonthsNoOverflow(self::GENERATION_HORIZON_MONTHS);
+
+        $generated = 0;
+        $due = $this->nextDueDate($recurrence, $now);
+
+        while ($due->lte($horizon)) {
+            if ($this->createIfMissing($recurrence, $due)) {
+                $generated++;
             }
 
-            $recurrence->last_generated_at = $horizon->toDateString();
-            $recurrence->save();
+            $due = $this->dueDateForMonth(
+                $recurrence,
+                $due->copy()->addMonthsNoOverflow($recurrence->frequency->months())->startOfMonth(),
+            );
         }
+
+        $recurrence->last_generated_at = $horizon->toDateString();
+        $recurrence->save();
 
         return $generated;
     }

@@ -46,4 +46,12 @@ export const recurrencesService = {
   async remove(id: string): Promise<void> {
     await http.delete(`/financial/recurrences/${id}`)
   },
+
+  async generatePayables(): Promise<{ generated: number }> {
+    const response = await http.post<ApiResponse<{ generated: number }>>(
+      '/financial/recurrences/generate',
+    )
+
+    return response.data.data
+  },
 }

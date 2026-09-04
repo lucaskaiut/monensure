@@ -4,6 +4,11 @@ import type { ListParams } from '@/shared/types/api'
 import { toast } from '@/shared/stores/toast.store'
 import { recurrencesService, type RecurrencePayload } from '../services/recurrences.service'
 
+function invalidateFinancialQueries(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: queryKeys.financial.recurrences.all })
+  queryClient.invalidateQueries({ queryKey: queryKeys.financial.payables.all })
+}
+
 export function useRecurrencesQuery(params: ListParams) {
   return useQuery({
     queryKey: queryKeys.financial.recurrences.list(params),
@@ -25,9 +30,15 @@ export function useCreateRecurrence() {
 
   return useMutation({
     mutationFn: (payload: RecurrencePayload) => recurrencesService.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.financial.recurrences.all })
-      toast.success('Recorrência criada', 'A recorrência foi cadastrada com sucesso.')
+    onSuccess: (_data, variables) => {
+      invalidateFinancialQueries(queryClient)
+
+      if (variables.generate_automatically === false) {
+        toast.success('Recorrência criada', 'A recorrência foi cadastrada com sucesso.')
+        return
+      }
+
+      toast.success('Recorrência criada', 'As contas do período foram geradas automaticamente.')
     },
   })
 }
@@ -37,9 +48,15 @@ export function useUpdateRecurrence(id: string) {
 
   return useMutation({
     mutationFn: (payload: RecurrencePayload) => recurrencesService.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.financial.recurrences.all })
-      toast.success('Recorrência atualizada', 'As alterações foram salvas.')
+    onSuccess: (_data, variables) => {
+      invalidateFinancialQueries(queryClient)
+
+      if (variables.generate_automatically === false || variables.active === false) {
+        toast.success('Recorrência atualizada', 'As alterações foram salvas.')
+        return
+      }
+
+      toast.success('Recorrência atualizada', 'As contas do período foram atualizadas.')
     },
   })
 }
@@ -50,8 +67,32 @@ export function useDeleteRecurrence() {
   return useMutation({
     mutationFn: (id: string) => recurrencesService.remove(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.financial.recurrences.all })
+      invalidateFinancialQueries(queryClient)
       toast.success('Recorrência removida', 'A recorrência foi excluída com sucesso.')
+    },
+  })
+}
+
+export function useGenerateRecurrencePayables() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => recurrencesService.generatePayables(),
+    onSuccess: (result) => {
+      invalidateFinancialQueries(queryClient)
+
+      if (result.generated > 0) {
+        toast.success(
+          'Contas geradas',
+          `${result.generated} conta(s) criada(s) a partir das recorrências ativas.`,
+        )
+        return
+      }
+
+      toast.info(
+        'Nada a gerar',
+        'Todas as recorrências ativas já possuem contas para os próximos 12 meses.',
+      )
     },
   })
 }

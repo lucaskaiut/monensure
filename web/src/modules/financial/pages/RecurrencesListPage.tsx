@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { CalendarClock, Pencil, Plus, Trash2 } from 'lucide-react'
+import { CalendarClock, Pencil, Play, Plus, Trash2 } from 'lucide-react'
 import {
   Badge,
   Button,
@@ -22,7 +22,7 @@ import { usePermissions } from '@/shared/hooks/usePermissions'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { formatCurrency } from '@/shared/utils/format'
 import type { FinancialRecurrence } from '@/shared/types/models'
-import { useDeleteRecurrence, useRecurrencesQuery } from '../hooks/useRecurrences'
+import { useDeleteRecurrence, useGenerateRecurrencePayables, useRecurrencesQuery } from '../hooks/useRecurrences'
 
 const PER_PAGE = 10
 
@@ -45,6 +45,7 @@ export default function RecurrencesListPage() {
 
   const [recurrenceToDelete, setRecurrenceToDelete] = useState<FinancialRecurrence | null>(null)
   const deleteRecurrence = useDeleteRecurrence()
+  const generatePayables = useGenerateRecurrencePayables()
 
   const query = useRecurrencesQuery({ page, per_page: PER_PAGE, search: debouncedSearch || undefined })
 
@@ -150,12 +151,24 @@ export default function RecurrencesListPage() {
         description="Contas fixas geradas automaticamente todo mês."
         breadcrumb={[{ label: 'Dashboard', to: '/dashboard' }, { label: 'Recorrências' }]}
         actions={
-          <Can permission={Permission.RECURRENCE_CREATE}>
-            <ButtonLink to="/financial/recurrences/create">
-              <Plus className="size-4" />
-              Nova recorrência
-            </ButtonLink>
-          </Can>
+          <div className="flex flex-wrap items-center gap-2">
+            {can(Permission.RECURRENCE_UPDATE) && (
+              <Button
+                variant="secondary"
+                disabled={generatePayables.isPending}
+                onClick={() => generatePayables.mutate()}
+              >
+                <Play className="size-4" />
+                Gerar contas
+              </Button>
+            )}
+            <Can permission={Permission.RECURRENCE_CREATE}>
+              <ButtonLink to="/financial/recurrences/create">
+                <Plus className="size-4" />
+                Nova recorrência
+              </ButtonLink>
+            </Can>
+          </div>
         }
       />
 

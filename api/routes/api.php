@@ -138,6 +138,7 @@ Route::middleware(['auth.multi:sanctum', 'tenant', 'subscription.active'])->grou
         Route::post('financial/payables/{payable}/cancel', [PayableController::class, 'cancel'])->middleware('permission:payable.update');
 
         Route::get('financial/recurrences', [RecurrenceController::class, 'index'])->middleware('permission:recurrence.read');
+        Route::post('financial/recurrences/generate', [RecurrenceController::class, 'generate'])->middleware('permission:recurrence.update');
         Route::post('financial/recurrences', [RecurrenceController::class, 'store'])->middleware('permission:recurrence.create');
         Route::get('financial/recurrences/{recurrence}', [RecurrenceController::class, 'show'])->middleware('permission:recurrence.read');
         Route::match(['put', 'patch'], 'financial/recurrences/{recurrence}', [RecurrenceController::class, 'update'])->middleware('permission:recurrence.update');

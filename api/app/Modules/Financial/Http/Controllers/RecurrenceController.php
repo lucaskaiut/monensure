@@ -47,6 +47,19 @@ class RecurrenceController extends ApiController
         return $this->created(FinancialRecurrenceResource::make($recurrence), 'Recorrência criada com sucesso.');
     }
 
+    public function generate(): JsonResponse
+    {
+        $this->authorize('generate', FinancialRecurrence::class);
+
+        $generated = $this->service->generateForTenant();
+
+        $message = $generated > 0
+            ? "{$generated} conta(s) gerada(s) com sucesso."
+            : 'Nenhuma conta nova para gerar — as recorrências ativas já estão atualizadas.';
+
+        return $this->success(['generated' => $generated], $message);
+    }
+
     public function update(UpdateRecurrenceRequest $request, FinancialRecurrence $recurrence): JsonResponse
     {
         $this->authorize('update', $recurrence);

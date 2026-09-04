@@ -37,6 +37,11 @@ class FinancialRecurrencePolicy
             && $user->hasPermission(Permission::RECURRENCE_DELETE);
     }
 
+    public function generate(User $user): bool
+    {
+        return $user->hasPermission(Permission::RECURRENCE_UPDATE);
+    }
+
     private function sameTenant(FinancialRecurrence $recurrence): bool
     {
         return TenantAuthorization::matchesCurrentTenant((int) $recurrence->tenant_id);

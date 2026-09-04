@@ -278,7 +278,7 @@ class TenantChildrenTest extends TestCase
 
         Sanctum::actingAs($this->createMaster($umbrellaA));
 
-        $this->getJson("/api/tenant/children/{$foreignChild->uuid}")->assertForbidden();
+        $this->getJson("/api/tenant/children/{$foreignChild->uuid}")->assertNotFound();
 
         $this->putJson("/api/tenant/children/{$foreignChild->uuid}", [
             'tenant' => [
@@ -290,7 +290,43 @@ class TenantChildrenTest extends TestCase
             ],
             'plan_id' => $plan->uuid,
             'is_complimentary' => true,
-        ])->assertForbidden();
+        ])->assertNotFound();
+    }
+
+    public function test_master_can_manage_child_while_child_context_is_selected(): void
+    {
+        $umbrella = $this->createTenantWithRoles();
+        $child = $this->createChildTenant($umbrella, [
+            'name' => 'Empresa Contexto',
+            'domain' => 'contexto.com.br',
+        ]);
+        $plan = Plan::factory()->forTenant($umbrella)->withoutTrial()->create();
+
+        Sanctum::actingAs($this->createMaster($umbrella));
+
+        $headers = ['X-Tenant-Id' => $child->uuid];
+
+        $this->getJson('/api/tenant/children', $headers)
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1);
+
+        $this->getJson("/api/tenant/children/{$child->uuid}", $headers)
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Empresa Contexto');
+
+        $this->putJson("/api/tenant/children/{$child->uuid}", [
+            'tenant' => [
+                'name' => 'Empresa Contexto Editada',
+                'document' => $child->document,
+                'email' => $child->email,
+                'phone' => $child->phone,
+                'domain' => $child->domain,
+            ],
+            'plan_id' => $plan->uuid,
+            'is_complimentary' => true,
+        ], $headers)
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Empresa Contexto Editada');
     }
 
     public function test_complimentary_child_passes_subscription_middleware(): void

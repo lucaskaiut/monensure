@@ -28,9 +28,16 @@ http.interceptors.request.use((config) => {
   const { selectedTenantId } = useTenantContextStore.getState()
   const homeTenantId = availableTenants.find((tenant) => tenant.is_home)?.id
 
+  const isChildTenantManagement =
+    typeof config.url === 'string' && config.url.includes('/tenant/children')
+
   // Parent/home selecionado → não envia X-Tenant-Id (contexto do próprio tenant).
+  // Gestão de empresas filhas sempre opera no umbrella, mesmo com filho selecionado.
   const shouldSendTenantHeader =
-    isMaster && Boolean(selectedTenantId) && selectedTenantId !== homeTenantId
+    isMaster &&
+    Boolean(selectedTenantId) &&
+    selectedTenantId !== homeTenantId &&
+    !isChildTenantManagement
 
   if (shouldSendTenantHeader && selectedTenantId) {
     config.headers.set('X-Tenant-Id', selectedTenantId)

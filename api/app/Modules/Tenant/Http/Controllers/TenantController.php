@@ -22,7 +22,7 @@ class TenantController extends ApiController
     {
         $this->authorize('viewAny', Tenant::class);
 
-        $umbrella = TenantContext::tenant();
+        $umbrella = $this->umbrellaTenant();
 
         $children = $this->service->paginateChildren(
             $umbrella,
@@ -37,7 +37,7 @@ class TenantController extends ApiController
     {
         $this->authorize('viewChild', $child);
 
-        $umbrella = TenantContext::tenant();
+        $umbrella = $this->umbrellaTenant();
         $child = $this->service->findChild($umbrella, $child);
 
         return $this->success(TenantResource::make($child));
@@ -56,7 +56,7 @@ class TenantController extends ApiController
     {
         $this->authorize('create', Tenant::class);
 
-        $umbrella = TenantContext::tenant();
+        $umbrella = $this->umbrellaTenant();
 
         $result = $this->service->createChild(
             $umbrella,
@@ -77,7 +77,7 @@ class TenantController extends ApiController
     {
         $this->authorize('updateChild', $child);
 
-        $umbrella = TenantContext::tenant();
+        $umbrella = $this->umbrellaTenant();
 
         $tenant = $this->service->updateChild(
             $umbrella,
@@ -100,5 +100,13 @@ class TenantController extends ApiController
         $tenant = $this->service->update($tenant, $request->validated());
 
         return $this->success(TenantResource::make($tenant), 'Tenant atualizado com sucesso.');
+    }
+
+    private function umbrellaTenant(): Tenant
+    {
+        /** @var Tenant $umbrella */
+        $umbrella = auth()->user()->tenant;
+
+        return $umbrella;
     }
 }

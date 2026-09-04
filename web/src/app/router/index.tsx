@@ -46,6 +46,7 @@ const RecurrenceEditPage = lazy(() => import('@/modules/financial/pages/Recurren
 const CashflowPage = lazy(() => import('@/modules/financial/pages/CashflowPage'))
 const TenantsListPage = lazy(() => import('@/modules/tenants/pages/TenantsListPage'))
 const TenantCreatePage = lazy(() => import('@/modules/tenants/pages/TenantCreatePage'))
+const TenantEditPage = lazy(() => import('@/modules/tenants/pages/TenantEditPage'))
 
 export const router = createBrowserRouter([
   {
@@ -229,6 +230,14 @@ export const router = createBrowserRouter([
             element: (
               <PermissionGuard permission={Permission.TENANT_CREATE} requiresUmbrella>
                 <TenantCreatePage />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: '/tenants/:id/edit',
+            element: (
+              <PermissionGuard permission={Permission.TENANT_UPDATE} requiresUmbrella>
+                <TenantEditPage />
               </PermissionGuard>
             ),
           },

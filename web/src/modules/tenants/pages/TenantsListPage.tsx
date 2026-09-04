@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router'
-import { Building2, Plus } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router'
+import { Building2, Pencil, Plus } from 'lucide-react'
 import {
+  Badge,
+  Button,
   ButtonLink,
   DataTable,
   EmptyState,
@@ -13,8 +15,11 @@ import {
   SearchInput,
   type Column,
 } from '@/shared/design-system'
+import { Can } from '@/app/guards/PermissionGuard'
+import { Permission } from '@/shared/constants/permissions'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { useIsUmbrellaTenant } from '@/shared/hooks/useIsUmbrellaTenant'
+import { usePermissions } from '@/shared/hooks/usePermissions'
 import { useSessionStore } from '@/shared/stores/session.store'
 import { formatDate } from '@/shared/utils/format'
 import { formatDocument } from '@/shared/utils/document'
@@ -23,17 +28,34 @@ import { useTenantChildrenQuery } from '../hooks/useTenants'
 
 const PER_PAGE = 10
 
+function accessLabel(tenant: Tenant): { label: string; variant: 'success' | 'primary' | 'neutral' } {
+  const subscription = tenant.subscription
+
+  if (subscription?.is_complimentary_active || subscription?.is_complimentary) {
+    return { label: 'Parceria', variant: 'primary' }
+  }
+
+  if (subscription) {
+    return { label: 'Assinatura', variant: 'success' }
+  }
+
+  return { label: 'Sem plano', variant: 'neutral' }
+}
+
 export default function TenantsListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('search') ?? '')
   const debouncedSearch = useDebounce(search)
   const page = Number(searchParams.get('page') ?? 1)
+  const navigate = useNavigate()
+  const { can } = usePermissions()
 
   const query = useTenantChildrenQuery({ page, per_page: PER_PAGE, search: debouncedSearch || undefined })
 
   const isMaster = useSessionStore((state) => state.isMaster)
   const isUmbrella = useIsUmbrellaTenant()
   const showCreateButton = isMaster && isUmbrella
+  const canUpdate = can(Permission.TENANT_UPDATE) && isMaster && isUmbrella
 
   const createButton = (
     <ButtonLink to="/tenants/create">
@@ -75,6 +97,14 @@ export default function TenantsListPage() {
       render: (tenant) => <span className="text-muted">{formatDocument(tenant.document)}</span>,
     },
     {
+      key: 'access',
+      header: 'Acesso',
+      render: (tenant) => {
+        const access = accessLabel(tenant)
+        return <Badge variant={access.variant}>{access.label}</Badge>
+      },
+    },
+    {
       key: 'email',
       header: 'E-mail',
       render: (tenant) => <span className="text-muted">{tenant.email}</span>,
@@ -89,6 +119,27 @@ export default function TenantsListPage() {
       header: 'Criada em',
       render: (tenant) => <span className="text-muted">{formatDate(tenant.created_at)}</span>,
     },
+    ...(canUpdate
+      ? [
+          {
+            key: 'actions',
+            header: <span className="sr-only">Ações</span>,
+            className: 'w-16 text-right',
+            render: (tenant: Tenant) => (
+              <div className="flex items-center justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/tenants/${tenant.id}/edit`)}
+                  aria-label={`Editar ${tenant.name}`}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+              </div>
+            ),
+          } satisfies Column<Tenant>,
+        ]
+      : []),
   ]
 
   return (
@@ -128,7 +179,11 @@ export default function TenantsListPage() {
                   ? 'Tente ajustar os termos da busca.'
                   : 'Crie a primeira empresa do seu grupo.'
               }
-              action={!debouncedSearch && showCreateButton ? createButton : undefined}
+              action={
+                !debouncedSearch && showCreateButton ? (
+                  <Can permission={Permission.TENANT_CREATE}>{createButton}</Can>
+                ) : undefined
+              }
             />
           }
         />

@@ -35,6 +35,7 @@ export const queryKeys = {
   tenants: {
     all: ['tenants'] as const,
     children: (params: ListParams) => ['tenants', 'children', params] as const,
+    detail: (id: string) => ['tenants', 'detail', id] as const,
   },
 
   assistant: {

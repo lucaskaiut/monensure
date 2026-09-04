@@ -4,6 +4,7 @@ namespace App\Modules\Tenant\Http\Controllers;
 
 use App\Modules\Shared\Http\Controllers\ApiController;
 use App\Modules\Tenant\Http\Requests\StoreChildTenantRequest;
+use App\Modules\Tenant\Http\Requests\UpdateChildTenantRequest;
 use App\Modules\Tenant\Http\Requests\UpdateTenantRequest;
 use App\Modules\Tenant\Http\Resources\TenantResource;
 use App\Modules\Tenant\Models\Tenant;
@@ -32,6 +33,16 @@ class TenantController extends ApiController
         return $this->paginated(TenantResource::collection($children));
     }
 
+    public function showChild(Tenant $child): JsonResponse
+    {
+        $this->authorize('viewChild', $child);
+
+        $umbrella = TenantContext::tenant();
+        $child = $this->service->findChild($umbrella, $child);
+
+        return $this->success(TenantResource::make($child));
+    }
+
     public function show(): JsonResponse
     {
         $tenant = TenantContext::tenant();
@@ -52,12 +63,32 @@ class TenantController extends ApiController
             $request->validated('tenant'),
             $request->validated('user'),
             $request->validated('plan_id'),
+            $request->boolean('is_complimentary'),
+            $request->validated('complimentary_ends_at'),
         );
 
         return $this->created([
             'tenant' => TenantResource::make($result['tenant']),
             'user' => UserResource::make($result['user']),
         ], 'Empresa criada com sucesso.');
+    }
+
+    public function updateChild(UpdateChildTenantRequest $request, Tenant $child): JsonResponse
+    {
+        $this->authorize('updateChild', $child);
+
+        $umbrella = TenantContext::tenant();
+
+        $tenant = $this->service->updateChild(
+            $umbrella,
+            $child,
+            $request->validated('tenant'),
+            $request->validated('plan_id'),
+            $request->boolean('is_complimentary'),
+            $request->validated('complimentary_ends_at'),
+        );
+
+        return $this->success(TenantResource::make($tenant), 'Empresa atualizada com sucesso.');
     }
 
     public function update(UpdateTenantRequest $request): JsonResponse

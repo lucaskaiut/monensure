@@ -2,14 +2,15 @@
 
 namespace App\Modules\Tenant\Http\Requests;
 
-use App\Modules\Shared\Rules\Cpf;
 use App\Modules\Shared\Rules\CpfOrCnpj;
+use App\Modules\Tenant\Models\Tenant;
 use App\Modules\Tenant\Support\Facades\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
-class StoreChildTenantRequest extends FormRequest
+class UpdateChildTenantRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -21,24 +22,23 @@ class StoreChildTenantRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var Tenant $child */
+        $child = $this->route('child');
+
         return [
             'tenant' => ['required', 'array'],
             'tenant.name' => ['required', 'string', 'max:255'],
             'tenant.document' => ['required', 'string', new CpfOrCnpj],
-            'tenant.email' => ['required', 'string', 'email', 'max:255', 'unique:tenants,email'],
+            'tenant.email' => [
+                'required', 'string', 'email', 'max:255',
+                Rule::unique('tenants', 'email')->ignore($child->getKey()),
+            ],
             'tenant.phone' => ['required', 'string', 'max:20'],
             'tenant.domain' => [
                 'required', 'string', 'max:255',
                 'regex:/^(?=.{1,253}$)((?!-)[a-z0-9-]{1,63}(?<!-)\.)+[a-z]{2,63}$/',
-                'unique:tenants,domain',
+                Rule::unique('tenants', 'domain')->ignore($child->getKey()),
             ],
-
-            'user' => ['required', 'array'],
-            'user.name' => ['required', 'string', 'max:255'],
-            'user.email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'user.phone' => ['nullable', 'string', 'max:20'],
-            'user.document' => ['nullable', 'string', new Cpf],
-            'user.password' => ['required', 'string', 'min:8', 'max:255'],
 
             'plan_id' => [
                 'nullable',
@@ -52,9 +52,9 @@ class StoreChildTenantRequest extends FormRequest
         ];
     }
 
-    public function withValidator(\Illuminate\Validation\Validator $validator): void
+    public function withValidator(Validator $validator): void
     {
-        $validator->after(function (\Illuminate\Validation\Validator $validator): void {
+        $validator->after(function (Validator $validator): void {
             if ($this->boolean('is_complimentary') && blank($this->input('plan_id'))) {
                 $validator->errors()->add('plan_id', 'Selecione um plano para liberar o acesso cortesia.');
             }
@@ -71,10 +71,6 @@ class StoreChildTenantRequest extends FormRequest
 
         if ($this->has('tenant.domain')) {
             $input['tenant']['domain'] = Str::lower(trim((string) $this->input('tenant.domain')));
-        }
-
-        if ($this->filled('user.document')) {
-            $input['user']['document'] = (string) preg_replace('/\D+/', '', (string) $this->input('user.document'));
         }
 
         if ($this->has('is_complimentary')) {

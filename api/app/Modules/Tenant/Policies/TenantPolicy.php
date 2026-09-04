@@ -34,6 +34,18 @@ class TenantPolicy
             && $user->hasPermission(Permission::TENANT_UPDATE);
     }
 
+    public function viewChild(User $user, Tenant $child): bool
+    {
+        return $this->ownsChild($user, $child)
+            && $user->hasPermission(Permission::TENANT_READ);
+    }
+
+    public function updateChild(User $user, Tenant $child): bool
+    {
+        return $this->ownsChild($user, $child)
+            && $user->hasPermission(Permission::TENANT_UPDATE);
+    }
+
     /**
      * Cadastro de tenants filhos é restrito ao usuário master do tenant
      * umbrella (raiz / sem parent_id).
@@ -45,5 +57,17 @@ class TenantPolicy
         }
 
         return TenantContext::tenant()?->isUmbrella() ?? false;
+    }
+
+    private function ownsChild(User $user, Tenant $child): bool
+    {
+        if (! $this->isUmbrellaMaster($user)) {
+            return false;
+        }
+
+        $umbrella = TenantContext::tenant();
+
+        return $umbrella !== null
+            && (int) $child->parent_id === (int) $umbrella->getKey();
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->timestamp('started_at');
             $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('last_billed_at')->nullable();
-            $table->timestamp('next_billing_at');
+            $table->timestamp('next_billing_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
 

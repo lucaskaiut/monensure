@@ -2,7 +2,13 @@ import { http } from '@/shared/api/http'
 import type { ApiResponse, ListParams, PaginatedResponse } from '@/shared/types/api'
 import type { Tenant, User } from '@/shared/types/models'
 
-export interface CreateChildTenantPayload {
+export interface ChildTenantAccessPayload {
+  plan_id: string | null
+  is_complimentary: boolean
+  complimentary_ends_at: string | null
+}
+
+export interface CreateChildTenantPayload extends ChildTenantAccessPayload {
   tenant: {
     name: string
     document: string
@@ -15,7 +21,16 @@ export interface CreateChildTenantPayload {
     email: string
     password: string
   }
-  plan_id: string | null
+}
+
+export interface UpdateChildTenantPayload extends ChildTenantAccessPayload {
+  tenant: {
+    name: string
+    document: string
+    email: string
+    phone: string
+    domain: string
+  }
 }
 
 export const tenantsService = {
@@ -25,11 +40,23 @@ export const tenantsService = {
     return response.data
   },
 
+  async getChild(id: string): Promise<Tenant> {
+    const response = await http.get<ApiResponse<Tenant>>(`/tenant/children/${id}`)
+
+    return response.data.data
+  },
+
   async createChild(payload: CreateChildTenantPayload): Promise<{ tenant: Tenant; user: User }> {
     const response = await http.post<ApiResponse<{ tenant: Tenant; user: User }>>(
       '/tenant/children',
       payload,
     )
+
+    return response.data.data
+  },
+
+  async updateChild(id: string, payload: UpdateChildTenantPayload): Promise<Tenant> {
+    const response = await http.put<ApiResponse<Tenant>>(`/tenant/children/${id}`, payload)
 
     return response.data.data
   },

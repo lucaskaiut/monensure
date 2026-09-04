@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Ban, CircleDollarSign, Pencil, Plus, Receipt, Trash2 } from 'lucide-react'
 import {
@@ -24,6 +24,7 @@ import { Permission } from '@/shared/constants/permissions'
 import { usePermissions } from '@/shared/hooks/usePermissions'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { formatCurrency, formatDate } from '@/shared/utils/format'
+import { resolvePresetRange } from '@/shared/utils/date-range'
 import type { Payable, PayableStatus } from '@/shared/types/models'
 import { categoriesService } from '../services/categories.service'
 import { suppliersService } from '../services/suppliers.service'
@@ -38,6 +39,7 @@ import { PayPayableDialog } from '../components/PayPayableDialog'
 import { CancelPayableDialog } from '../components/CancelPayableDialog'
 
 const PER_PAGE = 10
+const DEFAULT_DATE_PRESET = 'this_month' as const
 
 const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'pendente', label: 'Pendente' },
@@ -53,8 +55,24 @@ export default function PayablesListPage() {
   const status = searchParams.get('status') ?? ''
   const supplierId = searchParams.get('supplier_id') ?? ''
   const categoryId = searchParams.get('category_id') ?? ''
-  const from = searchParams.get('from') ?? ''
-  const to = searchParams.get('to') ?? ''
+  const defaultRange = useMemo(() => resolvePresetRange(DEFAULT_DATE_PRESET), [])
+  const urlFrom = searchParams.get('from')
+  const urlTo = searchParams.get('to')
+  const from = urlFrom ?? defaultRange.from
+  const to = urlTo ?? defaultRange.to
+
+  useEffect(() => {
+    if (urlFrom === null && urlTo === null) {
+      setSearchParams(
+        (params) => {
+          params.set('from', defaultRange.from)
+          params.set('to', defaultRange.to)
+          return params
+        },
+        { replace: true },
+      )
+    }
+  }, [defaultRange.from, defaultRange.to, setSearchParams, urlFrom, urlTo])
 
   const navigate = useNavigate()
   const { can } = usePermissions()
@@ -274,14 +292,44 @@ export default function PayablesListPage() {
               label="Vencimento:"
               from={from}
               to={to}
-              showClear
               onChange={({ from: nextFrom, to: nextTo }) => {
-                setParam('from', nextFrom)
-                setParam('to', nextTo)
+                if (!nextFrom && !nextTo) {
+                  setSearchParams(
+                    (params) => {
+                      params.set('from', defaultRange.from)
+                      params.set('to', defaultRange.to)
+                      params.delete('page')
+                      return params
+                    },
+                    { replace: true },
+                  )
+                  return
+                }
+
+                setSearchParams(
+                  (params) => {
+                    nextFrom ? params.set('from', nextFrom) : params.delete('from')
+                    nextTo ? params.set('to', nextTo) : params.delete('to')
+                    params.delete('page')
+                    return params
+                  },
+                  { replace: true },
+                )
               }}
             />
           </div>
         </FilterBar>
+
+        {query.data && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-surface px-4 py-3">
+            <p className="text-sm text-muted">
+              Total de {query.data.meta.total} conta(s) no filtro
+            </p>
+            <p className="text-lg font-semibold text-foreground">
+              {formatCurrency(query.data.meta.value_total ?? 0)}
+            </p>
+          </div>
+        )}
 
         <DataTable
           caption="Lista de contas a pagar"

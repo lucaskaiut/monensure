@@ -45,6 +45,8 @@ class CashflowTest extends TestCase
         $this->assertEquals(50.0, $summary['next_7_days']['total']);
         $this->assertSame(2, $summary['next_30_days']['count']);
         $this->assertEquals(350.0, $summary['next_30_days']['total']);
+        $this->assertSame(3, $summary['this_month']['count']);
+        $this->assertEquals(550.0, $summary['this_month']['total']);
         $this->assertEquals(1650.0, $summary['open_total']);
     }
 

@@ -17,6 +17,7 @@ class FinancialOverviewService
      *     due_today: array{count: int, total: float},
      *     next_7_days: array{count: int, total: float},
      *     next_30_days: array{count: int, total: float},
+     *     this_month: array{count: int, total: float},
      *     open_total: float
      * }
      */
@@ -33,6 +34,9 @@ class FinancialOverviewService
             'next_30_days' => $this->aggregate(fn ($q) => $q
                 ->whereDate('due_date', '>', $today)
                 ->whereDate('due_date', '<=', $today->copy()->addDays(30))),
+            'this_month' => $this->aggregate(fn ($q) => $q
+                ->whereDate('due_date', '>=', $today->copy()->startOfMonth())
+                ->whereDate('due_date', '<=', $today->copy()->endOfMonth())),
             'open_total' => (float) Payable::query()->pending()->sum('value'),
         ];
     }

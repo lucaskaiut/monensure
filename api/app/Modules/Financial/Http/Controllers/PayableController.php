@@ -26,16 +26,28 @@ class PayableController extends ApiController
     {
         $this->authorize('viewAny', Payable::class);
 
-        $payables = $this->service->paginate([
+        $filters = [
             'status' => $request->string('status')->toString() ?: null,
             'supplier_id' => $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null,
             'category_id' => $request->filled('category_id') ? (int) $request->input('category_id') : null,
             'from' => $request->string('from')->toString() ?: null,
             'to' => $request->string('to')->toString() ?: null,
             'search' => $request->string('search')->toString() ?: null,
-        ], (int) $request->integer('per_page', 15));
+        ];
 
-        return $this->paginated(PayableResource::collection($payables));
+        $payables = $this->service->paginate($filters, (int) $request->integer('per_page', 15));
+        $valueTotal = $this->service->sumValues($filters);
+
+        $collection = PayableResource::collection($payables);
+        $payload = $collection->response()->getData(true);
+
+        return response()->json([
+            'success' => true,
+            'message' => null,
+            'data' => $payload['data'] ?? [],
+            'meta' => array_merge($payload['meta'] ?? [], ['value_total' => $valueTotal]),
+            'links' => $payload['links'] ?? null,
+        ]);
     }
 
     public function show(Payable $payable): JsonResponse

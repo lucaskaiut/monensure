@@ -15,6 +15,7 @@ use App\Modules\Financial\Models\PayablePayment;
 use App\Modules\Financial\Support\ResolvesRelations;
 use App\Modules\User\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -29,17 +30,33 @@ class PayableService
      */
     public function paginate(array $filters, int $perPage = 15): LengthAwarePaginator
     {
-        return Payable::query()
+        return $this->filteredQuery($filters)
             ->with(['supplier:id,uuid,name', 'category:id,uuid,name'])
+            ->orderBy('due_date')
+            ->orderBy('id')
+            ->paginate(min(max($perPage, 1), 100));
+    }
+
+    /**
+     * @param  array{status?: ?string, supplier_id?: ?int, category_id?: ?int, from?: ?string, to?: ?string, search?: ?string}  $filters
+     */
+    public function sumValues(array $filters): float
+    {
+        return (float) $this->filteredQuery($filters)->sum('value');
+    }
+
+    /**
+     * @param  array{status?: ?string, supplier_id?: ?int, category_id?: ?int, from?: ?string, to?: ?string, search?: ?string}  $filters
+     */
+    private function filteredQuery(array $filters): Builder
+    {
+        return Payable::query()
             ->when(filled($filters['status'] ?? null), fn ($q) => $q->where('status', $filters['status']))
             ->when(filled($filters['supplier_id'] ?? null), fn ($q) => $q->where('supplier_id', $filters['supplier_id']))
             ->when(filled($filters['category_id'] ?? null), fn ($q) => $q->where('category_id', $filters['category_id']))
             ->when(filled($filters['from'] ?? null), fn ($q) => $q->whereDate('due_date', '>=', $filters['from']))
             ->when(filled($filters['to'] ?? null), fn ($q) => $q->whereDate('due_date', '<=', $filters['to']))
-            ->when(filled($filters['search'] ?? null), fn ($q) => $q->where('description', 'like', "%{$filters['search']}%"))
-            ->orderBy('due_date')
-            ->orderBy('id')
-            ->paginate(min(max($perPage, 1), 100));
+            ->when(filled($filters['search'] ?? null), fn ($q) => $q->where('description', 'like', "%{$filters['search']}%"));
     }
 
     public function create(CreatePayableDTO $dto, ?User $actor = null): Payable

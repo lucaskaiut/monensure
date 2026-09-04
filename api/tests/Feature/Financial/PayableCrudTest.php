@@ -29,6 +29,21 @@ class PayableCrudTest extends TestCase
         $this->assertSame(2, $response->json('meta.total'));
     }
 
+    public function test_index_returns_value_total_for_filtered_payables(): void
+    {
+        [, $child] = $this->createOperationalChild();
+
+        Payable::factory()->forTenant($child)->create(['value' => 100]);
+        Payable::factory()->forTenant($child)->create(['value' => 250.5]);
+
+        Sanctum::actingAs($this->createAdmin($child));
+
+        $response = $this->getJson('/api/financial/payables')->assertOk();
+
+        $this->assertSame(2, $response->json('meta.total'));
+        $this->assertEquals(350.5, $response->json('meta.value_total'));
+    }
+
     public function test_store_creates_payable_bound_to_tenant_and_audits(): void
     {
         [$umbrella, $child] = $this->createOperationalChild();

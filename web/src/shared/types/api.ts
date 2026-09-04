@@ -11,6 +11,7 @@ export interface PaginationMeta {
   per_page: number
   to: number | null
   total: number
+  value_total?: number
 }
 
 export interface PaginatedResponse<T> {

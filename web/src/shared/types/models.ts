@@ -297,6 +297,7 @@ export interface FinancialSummary {
   due_today: FinancialMetric
   next_7_days: FinancialMetric
   next_30_days: FinancialMetric
+  this_month: FinancialMetric
   open_total: number
 }
 

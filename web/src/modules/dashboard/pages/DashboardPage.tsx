@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { AlertTriangle, Building2, CalendarCheck, CalendarDays, Globe, KeyRound, ShieldCheck, Users, Wallet } from 'lucide-react'
+import { AlertTriangle, Building2, CalendarCheck, CalendarDays, CalendarRange, Globe, KeyRound, ShieldCheck, Users, Wallet } from 'lucide-react'
 import { Link } from 'react-router'
 import {
   Badge,
@@ -16,6 +16,7 @@ import { usePermissions } from '@/shared/hooks/usePermissions'
 import { cn } from '@/shared/utils/cn'
 import { formatCurrency } from '@/shared/utils/format'
 import { useFinancialSummary } from '@/modules/financial/hooks/useFinancialOverview'
+import { buildPayablesListUrl } from '@/modules/financial/utils/payables-url'
 import { useDashboardStats, type DashboardStat } from '../hooks/useDashboardStats'
 
 function StatCard({
@@ -122,6 +123,14 @@ export default function DashboardPage() {
           <section className="space-y-4">
             <h2 className="text-sm font-semibold text-foreground">Financeiro</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <FinancialCard
+                label="Este mês"
+                icon={CalendarRange}
+                metric={financialSummary.data?.this_month}
+                loading={financialSummary.isPending}
+                to={buildPayablesListUrl('this_month')}
+                accent="bg-primary-soft text-primary"
+              />
               <FinancialCard
                 label="Contas vencidas"
                 icon={AlertTriangle}

@@ -97,9 +97,11 @@ class PayableController extends ApiController
             $request->user(),
         );
 
+        $targets->each(fn (Payable $payable) => $payable->load('supplier', 'category'));
+
         return $this->success([
             'updated' => $targets->count(),
-            'payables' => PayableResource::collection($targets->load('supplier', 'category')),
+            'payables' => PayableResource::collection($targets),
         ], 'Conta(s) atualizada(s) com sucesso.');
     }
 

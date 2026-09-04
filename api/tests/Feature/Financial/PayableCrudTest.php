@@ -124,6 +124,32 @@ class PayableCrudTest extends TestCase
         ])->assertForbidden();
     }
 
+    public function test_update_single_payable_returns_loaded_relations(): void
+    {
+        [, $child] = $this->createOperationalChild();
+        Sanctum::actingAs($this->createAdmin($child));
+
+        $payable = Payable::factory()->forTenant($child)->create([
+            'description' => 'Aluguel',
+            'value' => 1500,
+        ]);
+
+        $this->putJson("/api/financial/payables/{$payable->uuid}", [
+            'description' => 'Aluguel atualizado',
+            'value' => 1600,
+            'due_date' => $payable->due_date->toDateString(),
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.updated', 1)
+            ->assertJsonPath('data.payables.0.description', 'Aluguel atualizado')
+            ->assertJsonPath('data.payables.0.value', '1600.00');
+
+        $this->assertDatabaseHas('payables', [
+            'uuid' => $payable->uuid,
+            'description' => 'Aluguel atualizado',
+        ]);
+    }
+
     public function test_batch_edit_this_and_next(): void
     {
         [$umbrella, $child] = $this->createOperationalChild();

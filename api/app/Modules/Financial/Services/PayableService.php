@@ -28,13 +28,13 @@ class PayableService
     /**
      * @param  array{status?: ?string, supplier_id?: ?int, category_id?: ?int, from?: ?string, to?: ?string, search?: ?string}  $filters
      */
-    public function paginate(array $filters, int $perPage = 15): LengthAwarePaginator
+    public function paginate(array $filters, int $perPage = 15, ?int $page = null): LengthAwarePaginator
     {
         return $this->filteredQuery($filters)
             ->with(['supplier:id,uuid,name', 'category:id,uuid,name'])
             ->orderBy('due_date')
             ->orderBy('id')
-            ->paginate(min(max($perPage, 1), 100));
+            ->paginate(min(max($perPage, 1), 100), ['*'], 'page', $page);
     }
 
     /**

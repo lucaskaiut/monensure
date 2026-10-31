@@ -26,13 +26,13 @@ class RecurrenceService
 
     public function __construct(private readonly FinancialAuditService $audit) {}
 
-    public function paginate(int $perPage = 15, ?string $search = null): LengthAwarePaginator
+    public function paginate(int $perPage = 15, ?string $search = null, ?int $page = null): LengthAwarePaginator
     {
         return FinancialRecurrence::query()
             ->with(['supplier:id,uuid,name', 'category:id,uuid,name'])
             ->when(filled($search), fn ($q) => $q->where('description', 'like', "%{$search}%"))
             ->orderBy('description')
-            ->paginate(min(max($perPage, 1), 100));
+            ->paginate(min(max($perPage, 1), 100), ['*'], 'page', $page);
     }
 
     /**
@@ -63,6 +63,15 @@ class RecurrenceService
      */
     public function update(FinancialRecurrence $recurrence, array $data, ?User $actor = null): FinancialRecurrence
     {
+        // supplier_id/category_id chegam como uuid — converte para as FKs numéricas.
+        if (array_key_exists('supplier_id', $data)) {
+            $data['supplier_id'] = $this->resolveSupplierId($data['supplier_id']);
+        }
+
+        if (array_key_exists('category_id', $data)) {
+            $data['category_id'] = $this->resolveCategoryId($data['category_id']);
+        }
+
         $recurrence->fill($data);
         $recurrence->save();
 

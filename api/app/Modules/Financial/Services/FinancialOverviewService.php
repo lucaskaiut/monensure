@@ -86,7 +86,7 @@ class FinancialOverviewService
      *
      * @param  array{supplier_id?: ?int, category_id?: ?int}  $filters
      */
-    public function overdue(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    public function overdue(array $filters = [], int $perPage = 15, ?int $page = null): LengthAwarePaginator
     {
         return Payable::query()
             ->with(['supplier:id,uuid,name', 'category:id,uuid,name'])
@@ -95,7 +95,7 @@ class FinancialOverviewService
             ->when(filled($filters['supplier_id'] ?? null), fn ($q) => $q->where('supplier_id', $filters['supplier_id']))
             ->when(filled($filters['category_id'] ?? null), fn ($q) => $q->where('category_id', $filters['category_id']))
             ->orderBy('due_date')
-            ->paginate(min(max($perPage, 1), 100));
+            ->paginate(min(max($perPage, 1), 100), ['*'], 'page', $page);
     }
 
     /**

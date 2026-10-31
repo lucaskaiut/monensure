@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class SupplierService
 {
-    public function paginate(int $perPage = 15, ?string $search = null): LengthAwarePaginator
+    public function paginate(int $perPage = 15, ?string $search = null, ?int $page = null): LengthAwarePaginator
     {
         return Supplier::query()
             ->when(filled($search), function ($query) use ($search): void {
@@ -19,7 +19,7 @@ class SupplierService
                 });
             })
             ->orderBy('name')
-            ->paginate(min(max($perPage, 1), 100));
+            ->paginate(min(max($perPage, 1), 100), ['*'], 'page', $page);
     }
 
     /**

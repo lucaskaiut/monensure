@@ -9,13 +9,13 @@ use Illuminate\Validation\ValidationException;
 
 class CategoryService
 {
-    public function paginate(int $perPage = 15, ?string $search = null): LengthAwarePaginator
+    public function paginate(int $perPage = 15, ?string $search = null, ?int $page = null): LengthAwarePaginator
     {
         return Category::query()
             ->with('parent:id,uuid,name')
             ->when(filled($search), fn ($query) => $query->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->paginate(min(max($perPage, 1), 100));
+            ->paginate(min(max($perPage, 1), 100), ['*'], 'page', $page);
     }
 
     /**

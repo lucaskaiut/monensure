@@ -14,12 +14,15 @@ use App\Modules\Financial\Http\Requests\UpdatePayableRequest;
 use App\Modules\Financial\Http\Resources\PayableResource;
 use App\Modules\Financial\Models\Payable;
 use App\Modules\Financial\Services\PayableService;
+use App\Modules\Financial\Support\ResolvesRelations;
 use App\Modules\Shared\Http\Controllers\ApiController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PayableController extends ApiController
 {
+    use ResolvesRelations;
+
     public function __construct(private readonly PayableService $service) {}
 
     public function index(Request $request): JsonResponse
@@ -28,8 +31,8 @@ class PayableController extends ApiController
 
         $filters = [
             'status' => $request->string('status')->toString() ?: null,
-            'supplier_id' => $request->filled('supplier_id') ? (int) $request->input('supplier_id') : null,
-            'category_id' => $request->filled('category_id') ? (int) $request->input('category_id') : null,
+            'supplier_id' => $this->supplierFilter($request),
+            'category_id' => $this->categoryFilter($request),
             'from' => $request->string('from')->toString() ?: null,
             'to' => $request->string('to')->toString() ?: null,
             'search' => $request->string('search')->toString() ?: null,

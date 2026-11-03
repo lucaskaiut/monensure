@@ -91,7 +91,7 @@ export const queryKeys = {
     },
     summary: () => ['financial', 'summary'] as const,
     cashflow: () => ['financial', 'cashflow'] as const,
-    overdue: (params: Record<string, number | undefined>) =>
+    overdue: (params: Record<string, string | undefined>) =>
       ['financial', 'overdue', params] as const,
   },
 } as const

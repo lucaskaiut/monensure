@@ -110,6 +110,36 @@ class PayableCrudTest extends TestCase
         ]);
     }
 
+    public function test_index_filters_by_supplier_and_category_uuid(): void
+    {
+        [, $child] = $this->createOperationalChild();
+        Sanctum::actingAs($this->createAdmin($child));
+
+        $supplier = \App\Modules\Financial\Models\Supplier::factory()->forTenant($child)->create();
+        $otherSupplier = \App\Modules\Financial\Models\Supplier::factory()->forTenant($child)->create();
+        $category = \App\Modules\Financial\Models\Category::factory()->forTenant($child)->create();
+
+        Payable::factory()->forTenant($child)->count(2)->create([
+            'supplier_id' => $supplier->getKey(),
+            'category_id' => $category->getKey(),
+            'value' => 100,
+        ]);
+        Payable::factory()->forTenant($child)->create(['supplier_id' => $otherSupplier->getKey()]);
+
+        $this->getJson('/api/financial/payables?supplier_id='.$supplier->uuid)
+            ->assertOk()
+            ->assertJsonPath('meta.total', 2)
+            ->assertJsonPath('meta.value_total', 200);
+
+        $this->getJson('/api/financial/payables?category_id='.$category->uuid)
+            ->assertOk()
+            ->assertJsonPath('meta.total', 2);
+
+        $this->getJson('/api/financial/payables?supplier_id='.\Illuminate\Support\Str::uuid())
+            ->assertOk()
+            ->assertJsonPath('meta.total', 0);
+    }
+
     public function test_member_without_permission_cannot_manage_payables(): void
     {
         [$umbrella, $child] = $this->createOperationalChild();

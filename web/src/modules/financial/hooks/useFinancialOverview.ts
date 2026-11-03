@@ -25,8 +25,8 @@ export function useOverduePayables(params: {
 }) {
   return useQuery({
     queryKey: queryKeys.financial.overdue({
-      supplier_id: params.supplier_id ? Number(params.supplier_id) : undefined,
-      category_id: params.category_id ? Number(params.category_id) : undefined,
+      supplier_id: params.supplier_id || undefined,
+      category_id: params.category_id || undefined,
     }),
     queryFn: () => overviewService.overdue(params),
     placeholderData: keepPreviousData,

@@ -2,14 +2,20 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { PaginationMeta } from '@/shared/types/api'
 import { cn } from '@/shared/utils/cn'
 import { Button } from './Button'
+import { PerPageSelect } from './PerPageSelect'
 
 export function Pagination({
   meta,
   onPageChange,
+  onPerPageChange,
+  perPageOptions,
   className,
 }: {
   meta: PaginationMeta
   onPageChange: (page: number) => void
+  /** Quando informado, exibe o seletor de registros por página. */
+  onPerPageChange?: (perPage: number) => void
+  perPageOptions?: readonly number[]
   className?: string
 }) {
   if (meta.total === 0) return null
@@ -25,7 +31,15 @@ export function Pagination({
         <span className="font-medium text-foreground">{meta.total}</span>
       </p>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {onPerPageChange && (
+          <PerPageSelect
+            className="mr-2"
+            value={meta.per_page}
+            onChange={onPerPageChange}
+            options={perPageOptions}
+          />
+        )}
         <Button
           variant="secondary"
           size="sm"

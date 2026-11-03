@@ -13,6 +13,7 @@ import {
   PageContent,
   PageHeader,
   Pagination,
+  parsePerPage,
   SearchInput,
   SearchSelect,
   Select,
@@ -38,7 +39,6 @@ import { PayableStatusBadge } from '../components/PayableStatusBadge'
 import { PayPayableDialog } from '../components/PayPayableDialog'
 import { CancelPayableDialog } from '../components/CancelPayableDialog'
 
-const PER_PAGE = 10
 const DEFAULT_DATE_PRESET = 'this_month' as const
 
 const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
@@ -52,6 +52,7 @@ export default function PayablesListPage() {
   const [search, setSearch] = useState(searchParams.get('search') ?? '')
   const debouncedSearch = useDebounce(search)
   const page = Number(searchParams.get('page') ?? 1)
+  const perPage = parsePerPage(searchParams.get('per_page'))
   const status = searchParams.get('status') ?? ''
   const supplierId = searchParams.get('supplier_id') ?? ''
   const categoryId = searchParams.get('category_id') ?? ''
@@ -119,7 +120,7 @@ export default function PayablesListPage() {
 
   const query = usePayablesQuery({
     page,
-    per_page: PER_PAGE,
+    per_page: perPage,
     search: debouncedSearch || undefined,
     status: status || undefined,
     supplier_id: supplierId || undefined,
@@ -351,7 +352,11 @@ export default function PayablesListPage() {
         />
 
         {query.data && (
-          <Pagination meta={query.data.meta} onPageChange={(next) => setParam('page', String(next))} />
+          <Pagination
+            meta={query.data.meta}
+            onPageChange={(next) => setParam('page', String(next))}
+            onPerPageChange={(next) => setParam('per_page', String(next))}
+          />
         )}
       </PageContent>
 

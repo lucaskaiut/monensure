@@ -32,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([
         __DIR__.'/../app/Modules/Financial/Console/Commands',
+        __DIR__.'/../app/Modules/Payout/Console/Commands',
     ])
     ->withEvents(discover: [
         __DIR__.'/../app/Modules/Webhook/Listeners',

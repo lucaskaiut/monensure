@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { Ban, CircleDollarSign, Pencil, Plus, Receipt, Trash2 } from 'lucide-react'
+import { Ban, CalendarClock, CircleDollarSign, Landmark, Pencil, Plus, Receipt, Trash2 } from 'lucide-react'
 import {
+  Badge,
   Button,
   ButtonLink,
   ConfirmDialog,
@@ -24,7 +25,7 @@ import { Can } from '@/app/guards/PermissionGuard'
 import { Permission } from '@/shared/constants/permissions'
 import { usePermissions } from '@/shared/hooks/usePermissions'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import { formatCurrency, formatDate } from '@/shared/utils/format'
+import { formatCurrency, formatDate, formatDateTime } from '@/shared/utils/format'
 import { resolvePresetRange } from '@/shared/utils/date-range'
 import type { Payable, PayableStatus } from '@/shared/types/models'
 import { categoriesService } from '../services/categories.service'
@@ -38,6 +39,8 @@ import {
 import { PayableStatusBadge } from '../components/PayableStatusBadge'
 import { PayPayableDialog } from '../components/PayPayableDialog'
 import { CancelPayableDialog } from '../components/CancelPayableDialog'
+import { AsaasPayDialog } from '../components/AsaasPayDialog'
+import { PAYOUT_STATUS_LABELS } from '../components/PayoutStatusBadge'
 
 const DEFAULT_DATE_PRESET = 'this_month' as const
 
@@ -111,6 +114,7 @@ export default function PayablesListPage() {
   }, [])
 
   const [payableToPay, setPayableToPay] = useState<Payable | null>(null)
+  const [payableToPayAsaas, setPayableToPayAsaas] = useState<Payable | null>(null)
   const [payableToCancel, setPayableToCancel] = useState<Payable | null>(null)
   const [payableToDelete, setPayableToDelete] = useState<Payable | null>(null)
 
@@ -182,15 +186,41 @@ export default function PayablesListPage() {
     {
       key: 'status',
       header: 'Status',
-      render: (payable) => <PayableStatusBadge status={payable.status as PayableStatus} />,
+      render: (payable) => (
+        <div className="flex flex-col items-start gap-1">
+          <PayableStatusBadge status={payable.status as PayableStatus} />
+          {payable.active_payout && (
+            <Badge
+              variant={PAYOUT_STATUS_LABELS[payable.active_payout.status].variant}
+              className="gap-1"
+            >
+              <CalendarClock className="size-3" aria-hidden="true" />
+              {payable.active_payout.status === 'scheduled'
+                ? `Asaas ${formatDateTime(payable.active_payout.scheduled_for)}`
+                : `Asaas: ${PAYOUT_STATUS_LABELS[payable.active_payout.status].label}`}
+            </Badge>
+          )}
+        </div>
+      ),
     },
     {
       key: 'actions',
       header: <span className="sr-only">Ações</span>,
-      className: 'w-32 text-right',
+      className: 'w-40 text-right',
       render: (payable: Payable) => (
         <div className="flex items-center justify-end gap-1">
-          {payable.status === 'pendente' && can(Permission.PAYABLE_PAY) && (
+          {payable.status === 'pendente' && !payable.active_payout && can(Permission.PAYOUT_EXECUTE) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPayableToPayAsaas(payable)}
+              aria-label={`Pagar ${payable.description} via Asaas`}
+              title="Pagar ou agendar via Asaas"
+            >
+              <Landmark className="size-4" />
+            </Button>
+          )}
+          {payable.status === 'pendente' && !payable.active_payout && can(Permission.PAYABLE_PAY) && (
             <Button
               variant="ghost"
               size="sm"
@@ -369,6 +399,13 @@ export default function PayablesListPage() {
         onConfirm={(payload) =>
           payPayable.mutate(payload, { onSettled: () => setPayableToPay(null) })
         }
+      />
+
+      <AsaasPayDialog
+        key={`asaas-${payableToPayAsaas?.id ?? 'none'}`}
+        payable={payableToPayAsaas}
+        open={payableToPayAsaas !== null}
+        onClose={() => setPayableToPayAsaas(null)}
       />
 
       <CancelPayableDialog

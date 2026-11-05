@@ -33,6 +33,13 @@ class PayableResource extends JsonResource
             'supplier' => $this->whenLoaded('supplier', fn () => SupplierResource::make($this->supplier)),
             'category' => $this->whenLoaded('category', fn () => CategoryResource::make($this->category)),
             'payments' => PayablePaymentResource::collection($this->whenLoaded('payments')),
+            'active_payout' => $this->whenLoaded('activePayoutOrder', fn () => $this->activePayoutOrder === null ? null : [
+                'id' => $this->activePayoutOrder->uuid,
+                'status' => $this->activePayoutOrder->status->value,
+                'method' => $this->activePayoutOrder->method->value,
+                'value' => $this->activePayoutOrder->value,
+                'scheduled_for' => $this->activePayoutOrder->scheduled_for?->toIso8601String(),
+            ]),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

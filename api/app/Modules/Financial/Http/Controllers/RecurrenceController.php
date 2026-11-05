@@ -32,7 +32,7 @@ class RecurrenceController extends ApiController
     {
         $this->authorize('view', $recurrence);
 
-        return $this->success(FinancialRecurrenceResource::make($recurrence->load('supplier', 'category')));
+        return $this->success(FinancialRecurrenceResource::make($recurrence->load('supplier', 'category', 'autoPayApprover')));
     }
 
     public function store(StoreRecurrenceRequest $request): JsonResponse

@@ -57,7 +57,7 @@ class PayableController extends ApiController
     {
         $this->authorize('view', $payable);
 
-        return $this->success(PayableResource::make($payable->load('supplier', 'category', 'payments')));
+        return $this->success(PayableResource::make($payable->load('supplier', 'category', 'payments', 'activePayoutOrder')));
     }
 
     public function store(StorePayableRequest $request): JsonResponse

@@ -65,6 +65,9 @@ enum Permission: string
 
     case CASHFLOW_READ = 'cashflow.read';
 
+    case PAYOUT_READ = 'payout.read';
+    case PAYOUT_EXECUTE = 'payout.execute';
+
     /**
      * @return list<string>
      */

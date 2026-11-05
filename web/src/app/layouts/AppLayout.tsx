@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { Outlet } from 'react-router'
-import { Building2, CalendarClock, CreditCard, FolderTree, LayoutDashboard, KeyRound, LogOut, Menu, Receipt, ScrollText, Settings, ShieldCheck, Sparkles, TrendingUp, Truck, Users, Wallet, Webhook, Zap } from 'lucide-react'
+import { Building2, CalendarClock, CreditCard, FolderTree, LayoutDashboard, KeyRound, Landmark, LogOut, Menu, Receipt, ScrollText, Settings, ShieldCheck, Sparkles, TrendingUp, Truck, Users, Wallet, Webhook, Zap } from 'lucide-react'
 import { TenantSelector } from '@/modules/auth/components/TenantSelector'
 import { useSessionStore } from '@/shared/stores/session.store'
 import { useTenantContextStore } from '@/shared/stores/tenant.store'
@@ -125,6 +125,9 @@ function SidebarNavigation({ onNavigate }: { onNavigate?: () => void }) {
         <SidebarGroup label="Financeiro">
           {can(Permission.PAYABLE_READ) && (
             <SidebarItem to="/financial/payables" icon={Wallet} label="Contas a pagar" onNavigate={onNavigate} />
+          )}
+          {can(Permission.PAYOUT_READ) && (
+            <SidebarItem to="/financial/payouts" icon={Landmark} label="Pagamentos Asaas" onNavigate={onNavigate} />
           )}
           {can(Permission.CASHFLOW_READ) && (
             <SidebarItem to="/financial/cashflow" icon={TrendingUp} label="Fluxo de caixa" onNavigate={onNavigate} />

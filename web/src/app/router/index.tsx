@@ -32,6 +32,7 @@ const AuditPage = lazy(() => import('@/modules/audit/pages/AuditPage'))
 const AssistantPage = lazy(() => import('@/modules/assistant/pages/AssistantPage'))
 const AssistantSettingsPage = lazy(() => import('@/modules/assistant/pages/AssistantSettingsPage'))
 const PayablesListPage = lazy(() => import('@/modules/financial/pages/PayablesListPage'))
+const PayoutsListPage = lazy(() => import('@/modules/financial/pages/PayoutsListPage'))
 const PayableCreatePage = lazy(() => import('@/modules/financial/pages/PayableCreatePage'))
 const PayableEditPage = lazy(() => import('@/modules/financial/pages/PayableEditPage'))
 const SuppliersListPage = lazy(() => import('@/modules/financial/pages/SuppliersListPage'))
@@ -262,6 +263,14 @@ export const router = createBrowserRouter([
             element: (
               <PermissionGuard permission={Permission.PAYABLE_UPDATE}>
                 <PayableEditPage />
+              </PermissionGuard>
+            ),
+          },
+          {
+            path: '/financial/payouts',
+            element: (
+              <PermissionGuard permission={Permission.PAYOUT_READ}>
+                <PayoutsListPage />
               </PermissionGuard>
             ),
           },

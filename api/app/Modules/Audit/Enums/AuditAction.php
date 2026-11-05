@@ -25,4 +25,10 @@ enum AuditAction: string
     case RecurrenceCreated = 'recurrence.created';
     case RecurrenceUpdated = 'recurrence.updated';
     case RecurrenceDeleted = 'recurrence.deleted';
+
+    case PayoutScheduled = 'payout.scheduled';
+    case PayoutCancelled = 'payout.cancelled';
+    case PayoutResolved = 'payout.resolved';
+    case PayoutAutoPayEnabled = 'payout.auto_pay_enabled';
+    case PayoutAutoPayDisabled = 'payout.auto_pay_disabled';
 }

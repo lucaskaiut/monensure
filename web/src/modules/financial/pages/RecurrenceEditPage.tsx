@@ -10,6 +10,7 @@ import {
   Skeleton,
 } from '@/shared/design-system'
 import { RecurrenceForm } from '../forms/RecurrenceForm'
+import { RecurrenceAutoPayCard } from '../components/RecurrenceAutoPayCard'
 import { useRecurrenceQuery, useUpdateRecurrence } from '../hooks/useRecurrences'
 
 export default function RecurrenceEditPage() {
@@ -52,6 +53,8 @@ export default function RecurrenceEditPage() {
             />
           </Card>
         )}
+
+        {query.data && <RecurrenceAutoPayCard recurrence={query.data} />}
 
         {query.data && (
           <RecurrenceForm

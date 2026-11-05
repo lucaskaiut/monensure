@@ -1,10 +1,12 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, ButtonLink, Card, CardContent, Form, Section, TextField, TextareaField } from '@/shared/design-system'
+import { Button, ButtonLink, Card, CardContent, Form, Section, SelectField, TextField, TextareaField } from '@/shared/design-system'
 import { isApiError } from '@/shared/api/errors'
 import { applyApiErrorsToForm } from '@/shared/utils/forms'
 import { onlyDigits } from '@/shared/utils/document'
+import type { PixKeyType } from '@/shared/types/models'
 import type { SupplierPayload } from '../services/suppliers.service'
+import { PIX_KEY_TYPE_OPTIONS } from '../utils/pix'
 import { supplierSchema, type SupplierFormValues } from '../schemas/supplier.schema'
 
 interface SupplierFormProps {
@@ -23,6 +25,8 @@ export function SupplierForm({ mode, defaultValues, submitting, onSubmit }: Supp
       phone: '',
       email: '',
       observations: '',
+      pix_key_type: '',
+      pix_key: '',
       ...defaultValues,
     },
   })
@@ -34,6 +38,8 @@ export function SupplierForm({ mode, defaultValues, submitting, onSubmit }: Supp
       phone: values.phone || null,
       email: values.email || null,
       observations: values.observations || null,
+      pix_key: values.pix_key.trim() || null,
+      pix_key_type: values.pix_key.trim() ? (values.pix_key_type as PixKeyType) : null,
     }
 
     try {
@@ -56,6 +62,16 @@ export function SupplierForm({ mode, defaultValues, submitting, onSubmit }: Supp
               <TextField name="phone" label="Telefone" placeholder="(41) 99999-9999" />
               <TextField name="email" label="E-mail" type="email" />
               <TextareaField name="observations" label="Observações" className="sm:col-span-2" />
+            </div>
+          </Section>
+
+          <Section
+            title="Chave PIX"
+            description="Usada para pagar via Asaas e como padrão no pagamento automático das recorrências deste fornecedor."
+          >
+            <div className="grid gap-4 sm:grid-cols-[200px_1fr]">
+              <SelectField name="pix_key_type" label="Tipo da chave" options={PIX_KEY_TYPE_OPTIONS} placeholder="Sem chave" />
+              <TextField name="pix_key" label="Chave PIX" autoComplete="off" />
             </div>
           </Section>
 

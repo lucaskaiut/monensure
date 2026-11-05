@@ -5,6 +5,7 @@ namespace App\Modules\Financial\Models;
 use App\Modules\Financial\Enums\RecurrenceFrequency;
 use App\Modules\Shared\Models\Concerns\HasUuid;
 use App\Modules\Tenant\Models\Concerns\BelongsToTenant;
+use App\Modules\User\Models\User;
 use Database\Factories\FinancialRecurrenceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,12 +46,20 @@ class FinancialRecurrence extends Model
             'generate_automatically' => 'boolean',
             'last_generated_at' => 'date',
             'frequency' => RecurrenceFrequency::class,
+            'auto_pay_enabled' => 'boolean',
+            'auto_pay_max_value' => 'decimal:2',
+            'auto_pay_approved_at' => 'datetime',
         ];
     }
 
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function autoPayApprover(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'auto_pay_approved_by');
     }
 
     public function category(): BelongsTo

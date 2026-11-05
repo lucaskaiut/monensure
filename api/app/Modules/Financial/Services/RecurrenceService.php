@@ -8,6 +8,7 @@ use App\Modules\Financial\Enums\PayableStatus;
 use App\Modules\Financial\Models\FinancialRecurrence;
 use App\Modules\Financial\Models\Payable;
 use App\Modules\Financial\Support\ResolvesRelations;
+use App\Modules\Payout\Services\RecurrenceAutoPayService;
 use App\Modules\User\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
@@ -75,6 +76,11 @@ class RecurrenceService
         $recurrence->fill($data);
         $recurrence->save();
 
+        // Recorrência desativada não paga mais nada automaticamente.
+        if (! $recurrence->active && $recurrence->auto_pay_enabled) {
+            app(RecurrenceAutoPayService::class)->disable($recurrence, $actor, 'Recorrência desativada');
+        }
+
         $this->audit->record($actor, AuditAction::RecurrenceUpdated, 'financial_recurrence', $recurrence->uuid);
 
         $recurrence = $recurrence->refresh();
@@ -86,6 +92,10 @@ class RecurrenceService
 
     public function delete(FinancialRecurrence $recurrence, ?User $actor = null): void
     {
+        if ($recurrence->auto_pay_enabled) {
+            app(RecurrenceAutoPayService::class)->disable($recurrence, $actor, 'Recorrência removida');
+        }
+
         $recurrence->delete();
 
         $this->audit->record($actor, AuditAction::RecurrenceDeleted, 'financial_recurrence', $recurrence->uuid);

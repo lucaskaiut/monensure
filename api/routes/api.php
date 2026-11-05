@@ -16,6 +16,9 @@ use App\Modules\Financial\Http\Controllers\FinancialOverviewController;
 use App\Modules\Financial\Http\Controllers\PayableController;
 use App\Modules\Financial\Http\Controllers\RecurrenceController;
 use App\Modules\Financial\Http\Controllers\SupplierController;
+use App\Modules\Payout\Http\Controllers\AsaasPayoutWebhookController;
+use App\Modules\Payout\Http\Controllers\PayoutOrderController;
+use App\Modules\Payout\Http\Controllers\RecurrenceAutoPayController;
 use App\Modules\Shared\Http\Controllers\FileUploadController;
 use App\Modules\Tenant\Http\Controllers\TenantController;
 use App\Modules\User\Http\Controllers\UserController;
@@ -147,5 +150,23 @@ Route::middleware(['auth.multi:sanctum', 'tenant', 'subscription.active'])->grou
         Route::get('financial/summary', [FinancialOverviewController::class, 'summary'])->middleware('permission:payable.read');
         Route::get('financial/cashflow', [FinancialOverviewController::class, 'cashflow'])->middleware('permission:cashflow.read');
         Route::get('financial/overdue', [FinancialOverviewController::class, 'overdue'])->middleware('permission:payable.read');
+
+        // Pagamento de contas via Asaas
+        Route::get('financial/payouts', [PayoutOrderController::class, 'index'])->middleware('permission:payout.read');
+        Route::get('financial/payouts/overview', [PayoutOrderController::class, 'overview'])->middleware('permission:payout.read');
+        Route::post('financial/payouts/preview', [PayoutOrderController::class, 'preview'])->middleware(['permission:payout.execute', 'throttle:20,1']);
+        Route::get('financial/payouts/{payout}', [PayoutOrderController::class, 'show'])->middleware('permission:payout.read');
+        Route::post('financial/payouts/{payout}/cancel', [PayoutOrderController::class, 'cancel'])->middleware('permission:payout.execute');
+        Route::post('financial/payouts/{payout}/resolve', [PayoutOrderController::class, 'resolve'])->middleware('permission:payout.execute');
+        Route::post('financial/payouts/{payout}/sync', [PayoutOrderController::class, 'sync'])->middleware(['permission:payout.execute', 'throttle:20,1']);
+        Route::post('financial/payables/{payable}/payouts', [PayoutOrderController::class, 'store'])->middleware(['permission:payout.execute', 'throttle:10,1']);
+        Route::put('financial/recurrences/{recurrence}/auto-pay', [RecurrenceAutoPayController::class, 'enable'])->middleware(['permission:payout.execute', 'throttle:10,1']);
+        Route::delete('financial/recurrences/{recurrence}/auto-pay', [RecurrenceAutoPayController::class, 'disable'])->middleware('permission:payout.execute');
     });
 });
+
+/*
+ * Webhooks do Asaas para pagamento de contas (autenticados por token no header).
+ */
+Route::post('asaas/payouts/authorization', [AsaasPayoutWebhookController::class, 'authorization']);
+Route::post('asaas/payouts/events', [AsaasPayoutWebhookController::class, 'events']);

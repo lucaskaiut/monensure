@@ -1,6 +1,6 @@
 import { http } from '@/shared/api/http'
 import type { ApiResponse, ListParams, PaginatedResponse } from '@/shared/types/api'
-import type { Supplier } from '@/shared/types/models'
+import type { PixKeyType, Supplier } from '@/shared/types/models'
 
 export interface SupplierPayload {
   name: string
@@ -8,6 +8,8 @@ export interface SupplierPayload {
   phone?: string | null
   email?: string | null
   observations?: string | null
+  pix_key?: string | null
+  pix_key_type?: PixKeyType | null
 }
 
 export const suppliersService = {

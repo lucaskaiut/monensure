@@ -2,11 +2,12 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { queryKeys } from '@/shared/constants/query-keys'
 import type { ListParams } from '@/shared/types/api'
 import { toast } from '@/shared/stores/toast.store'
-import { recurrencesService, type RecurrencePayload } from '../services/recurrences.service'
+import { recurrencesService, type AutoPayPayload, type RecurrencePayload } from '../services/recurrences.service'
 
 function invalidateFinancialQueries(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: queryKeys.financial.recurrences.all })
   queryClient.invalidateQueries({ queryKey: queryKeys.financial.payables.all })
+  queryClient.invalidateQueries({ queryKey: queryKeys.financial.payouts.all })
 }
 
 export function useRecurrencesQuery(params: ListParams) {
@@ -93,6 +94,30 @@ export function useGenerateRecurrencePayables() {
         'Nada a gerar',
         'Todas as recorrências ativas já possuem contas para os próximos 12 meses.',
       )
+    },
+  })
+}
+
+export function useEnableAutoPay(id: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: AutoPayPayload) => recurrencesService.enableAutoPay(id, payload),
+    onSuccess: () => {
+      invalidateFinancialQueries(queryClient)
+      toast.success('Pagamento automático ativado', 'As contas serão agendadas 3 dias antes do vencimento.')
+    },
+  })
+}
+
+export function useDisableAutoPay(id: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => recurrencesService.disableAutoPay(id),
+    onSuccess: () => {
+      invalidateFinancialQueries(queryClient)
+      toast.success('Pagamento automático desativado', 'Os agendamentos ainda não enviados foram cancelados.')
     },
   })
 }

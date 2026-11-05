@@ -3,6 +3,7 @@
 namespace App\Modules\Financial\Models;
 
 use App\Modules\Financial\Enums\PayableStatus;
+use App\Modules\Payout\Models\PayoutOrder;
 use App\Modules\Shared\Models\Concerns\HasUuid;
 use App\Modules\Tenant\Models\Concerns\BelongsToTenant;
 use Database\Factories\PayableFactory;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payable extends Model
@@ -67,6 +69,24 @@ class Payable extends Model
     public function recurrence(): BelongsTo
     {
         return $this->belongsTo(FinancialRecurrence::class, 'recurrence_id');
+    }
+
+    /**
+     * @return HasMany<PayoutOrder, $this>
+     */
+    public function payoutOrders(): HasMany
+    {
+        return $this->hasMany(PayoutOrder::class)->latest('id');
+    }
+
+    /**
+     * Ordem de pagamento via Asaas em andamento (no máximo uma por conta).
+     *
+     * @return HasOne<PayoutOrder, $this>
+     */
+    public function activePayoutOrder(): HasOne
+    {
+        return $this->hasOne(PayoutOrder::class, 'active_lock');
     }
 
     /**

@@ -24,6 +24,8 @@ use App\Modules\Financial\Policies\CategoryPolicy;
 use App\Modules\Financial\Policies\FinancialRecurrencePolicy;
 use App\Modules\Financial\Policies\PayablePolicy;
 use App\Modules\Financial\Policies\SupplierPolicy;
+use App\Modules\Payout\Models\PayoutOrder;
+use App\Modules\Payout\Policies\PayoutOrderPolicy;
 use App\Modules\Tenant\Models\Tenant;
 use App\Modules\Tenant\Policies\TenantPolicy;
 use App\Modules\User\Models\User;
@@ -108,5 +110,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Supplier::class, SupplierPolicy::class);
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(FinancialRecurrence::class, FinancialRecurrencePolicy::class);
+        Gate::policy(PayoutOrder::class, PayoutOrderPolicy::class);
     }
 }

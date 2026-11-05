@@ -26,6 +26,8 @@ class Supplier extends Model
         'phone',
         'email',
         'observations',
+        'pix_key',
+        'pix_key_type',
     ];
 
     /**

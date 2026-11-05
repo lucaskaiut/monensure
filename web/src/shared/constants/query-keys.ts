@@ -89,6 +89,12 @@ export const queryKeys = {
       list: (params: ListParams) => ['financial', 'recurrences', 'list', params] as const,
       detail: (id: string) => ['financial', 'recurrences', 'detail', id] as const,
     },
+    payouts: {
+      all: ['financial', 'payouts'] as const,
+      list: (params: object) => ['financial', 'payouts', 'list', params] as const,
+      detail: (id: string) => ['financial', 'payouts', 'detail', id] as const,
+      overview: () => ['financial', 'payouts', 'overview'] as const,
+    },
     summary: () => ['financial', 'summary'] as const,
     cashflow: () => ['financial', 'cashflow'] as const,
     overdue: (params: Record<string, string | undefined>) =>

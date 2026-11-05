@@ -101,12 +101,12 @@ export default function RecurrencesListPage() {
     {
       key: 'active',
       header: 'Status',
-      render: (recurrence) =>
-        recurrence.active ? (
-          <Badge variant="success">Ativa</Badge>
-        ) : (
-          <Badge variant="neutral">Inativa</Badge>
-        ),
+      render: (recurrence) => (
+        <div className="flex flex-wrap items-center gap-1">
+          {recurrence.active ? <Badge variant="success">Ativa</Badge> : <Badge variant="neutral">Inativa</Badge>}
+          {recurrence.auto_pay?.enabled && <Badge variant="primary">PIX automático</Badge>}
+        </div>
+      ),
     },
     ...(can(Permission.RECURRENCE_UPDATE) || can(Permission.RECURRENCE_DELETE)
       ? [

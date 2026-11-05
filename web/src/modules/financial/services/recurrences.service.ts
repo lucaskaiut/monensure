@@ -1,6 +1,6 @@
 import { http } from '@/shared/api/http'
 import type { ApiResponse, ListParams, PaginatedResponse } from '@/shared/types/api'
-import type { FinancialRecurrence, RecurrenceFrequency } from '@/shared/types/models'
+import type { FinancialRecurrence, PixKeyType, RecurrenceFrequency } from '@/shared/types/models'
 
 export interface RecurrencePayload {
   description: string
@@ -11,6 +11,14 @@ export interface RecurrencePayload {
   category_id?: string | null
   active?: boolean
   generate_automatically?: boolean
+}
+
+export interface AutoPayPayload {
+  pix_key?: string | null
+  pix_key_type?: PixKeyType | null
+  time: string
+  max_value: number
+  password: string
 }
 
 export const recurrencesService = {
@@ -51,6 +59,21 @@ export const recurrencesService = {
     const response = await http.post<ApiResponse<{ generated: number }>>(
       '/financial/recurrences/generate',
     )
+
+    return response.data.data
+  },
+
+  async enableAutoPay(id: string, payload: AutoPayPayload): Promise<FinancialRecurrence> {
+    const response = await http.put<ApiResponse<FinancialRecurrence>>(
+      `/financial/recurrences/${id}/auto-pay`,
+      payload,
+    )
+
+    return response.data.data
+  },
+
+  async disableAutoPay(id: string): Promise<FinancialRecurrence> {
+    const response = await http.delete<ApiResponse<FinancialRecurrence>>(`/financial/recurrences/${id}/auto-pay`)
 
     return response.data.data
   },

@@ -62,6 +62,8 @@ export default function SupplierEditPage() {
               phone: query.data.phone ?? '',
               email: query.data.email ?? '',
               observations: query.data.observations ?? '',
+              pix_key_type: query.data.pix_key_type ?? '',
+              pix_key: query.data.pix_key ?? '',
             }}
             submitting={updateSupplier.isPending}
             onSubmit={async (payload) => {

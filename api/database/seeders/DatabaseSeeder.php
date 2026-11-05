@@ -39,6 +39,11 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->seedPlans($result->tenant);
+
+        // Dados fictícios de financeiro/pagamentos via Asaas, só para desenvolvimento.
+        if (app()->environment('local')) {
+            $this->call(PayoutDemoSeeder::class);
+        }
     }
 
     private function seedPlans(Tenant $tenant): void

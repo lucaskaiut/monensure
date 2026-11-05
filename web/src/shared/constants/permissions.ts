@@ -58,6 +58,9 @@ export const Permission = {
   RECURRENCE_UPDATE: 'recurrence.update',
   RECURRENCE_DELETE: 'recurrence.delete',
 
+  PAYOUT_READ: 'payout.read',
+  PAYOUT_EXECUTE: 'payout.execute',
+
   CASHFLOW_READ: 'cashflow.read',
 } as const
 
@@ -144,6 +147,8 @@ export const PERMISSION_GROUPS: PermissionGroup[] = [
       { value: Permission.RECURRENCE_UPDATE, label: 'Editar recorrências' },
       { value: Permission.RECURRENCE_DELETE, label: 'Remover recorrências' },
       { value: Permission.CASHFLOW_READ, label: 'Visualizar fluxo de caixa' },
+      { value: Permission.PAYOUT_READ, label: 'Visualizar pagamentos via Asaas' },
+      { value: Permission.PAYOUT_EXECUTE, label: 'Pagar e agendar contas via Asaas' },
     ],
   },
   {

@@ -31,7 +31,7 @@ class PayableService
     public function paginate(array $filters, int $perPage = 15, ?int $page = null): LengthAwarePaginator
     {
         return $this->filteredQuery($filters)
-            ->with(['supplier:id,uuid,name', 'category:id,uuid,name'])
+            ->with(['supplier:id,uuid,name,document,pix_key,pix_key_type', 'category:id,uuid,name', 'activePayoutOrder'])
             ->orderBy('due_date')
             ->orderBy('id')
             ->paginate(min(max($perPage, 1), 100), ['*'], 'page', $page);
@@ -132,6 +132,19 @@ class PayableService
             'issue_date' => $dto->issueDate?->toDateString(),
         ], fn ($value) => $value !== null);
 
+        // Valor e vencimento fazem parte do que foi aprovado no pagamento via Asaas.
+        if ($dto->value !== null || $dto->dueDate !== null) {
+            foreach ($targets as $target) {
+                $valueChanged = $dto->value !== null && bccomp($dto->value, (string) $target->value, 2) !== 0;
+                $dueChanged = $dto->dueDate !== null && $dto->scope === PayableEditScope::This
+                    && $dto->dueDate->toDateString() !== $target->due_date?->toDateString();
+
+                if ($valueChanged || $dueChanged) {
+                    $this->ensureNoActivePayout($target, 'alterar valor ou vencimento');
+                }
+            }
+        }
+
         foreach ($targets as $target) {
             $target->fill($changes);
 
@@ -157,6 +170,8 @@ class PayableService
                 'payable' => 'Não é possível pagar uma conta cancelada.',
             ]);
         }
+
+        $this->ensureNoActivePayout($payable, 'registrar o pagamento manual');
 
         $difference = bcsub($dto->paidValue, $payable->value, 2);
 
@@ -190,6 +205,10 @@ class PayableService
         $affected = 0;
 
         foreach ($targets as $target) {
+            $this->ensureNoActivePayout($target, 'cancelar');
+        }
+
+        foreach ($targets as $target) {
             if ($target->status === PayableStatus::Pending) {
                 $target->status = PayableStatus::Cancelled;
                 $target->save();
@@ -207,9 +226,24 @@ class PayableService
 
     public function destroy(Payable $payable, ?User $actor = null): void
     {
+        $this->ensureNoActivePayout($payable, 'excluir');
+
         $payable->delete();
 
         $this->audit->record($actor, AuditAction::PayableDeleted, 'payable', $payable->uuid);
+    }
+
+    /**
+     * Uma conta com pagamento via Asaas agendado ou em andamento não pode ser
+     * baixada, cancelada ou excluída por fora: isso poderia pagá-la em dobro.
+     */
+    private function ensureNoActivePayout(Payable $payable, string $action): void
+    {
+        if ($payable->activePayoutOrder()->exists()) {
+            throw ValidationException::withMessages([
+                'payable' => "Não é possível {$action}: a conta \"{$payable->description}\" tem um pagamento via Asaas agendado ou em andamento. Cancele o agendamento antes.",
+            ]);
+        }
     }
 
     /**

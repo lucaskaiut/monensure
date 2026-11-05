@@ -228,6 +228,8 @@ export interface Supplier {
   phone: string | null
   email: string | null
   observations: string | null
+  pix_key?: string | null
+  pix_key_type?: PixKeyType | null
   created_at: string | null
   updated_at: string | null
 }
@@ -268,6 +270,7 @@ export interface Payable {
   supplier?: Supplier | null
   category?: Category | null
   payments?: PayablePayment[]
+  active_payout?: PayableActivePayout | null
   created_at: string | null
   updated_at: string | null
 }
@@ -281,6 +284,7 @@ export interface FinancialRecurrence {
   active: boolean
   generate_automatically: boolean
   last_generated_at: string | null
+  auto_pay?: RecurrenceAutoPay
   supplier?: Supplier | null
   category?: Category | null
   created_at: string | null
@@ -311,4 +315,95 @@ export interface CashflowWindow {
 export interface CashflowProjection {
   overdue: FinancialMetric
   windows: CashflowWindow[]
+}
+
+export type PayoutMethod = 'boleto' | 'pix_qr_code' | 'pix_key'
+
+export type PayoutStatus =
+  | 'scheduled'
+  | 'submitting'
+  | 'processing'
+  | 'needs_review'
+  | 'paid'
+  | 'failed'
+  | 'cancelled'
+
+export type PixKeyType = 'CPF' | 'CNPJ' | 'EMAIL' | 'PHONE' | 'EVP'
+
+export interface RecurrenceAutoPay {
+  enabled: boolean
+  pix_key: string | null
+  pix_key_type: PixKeyType | null
+  time: string
+  max_value: string | null
+  approved_at: string | null
+  approved_by?: string | null
+}
+
+export interface PayableActivePayout {
+  id: string
+  status: PayoutStatus
+  method: PayoutMethod
+  value: string
+  scheduled_for: string | null
+}
+
+export interface PayoutPreview {
+  method: PayoutMethod
+  payment_code: string
+  beneficiary_name: string | null
+  beneficiary_document: string | null
+  value: number | null
+  due_date: string | null
+  can_pay: boolean
+  cannot_pay_reason: string | null
+  allows_custom_value: boolean
+  fee: number | null
+}
+
+export interface PayoutOrderEvent {
+  type: string
+  message: string
+  created_at: string | null
+}
+
+export interface PayoutOrder {
+  id: string
+  method: PayoutMethod
+  method_label: string
+  source: 'manual' | 'recurrence'
+  status: PayoutStatus
+  value: string
+  paid_value: string | null
+  payment_code: string
+  pix_key_type: PixKeyType | null
+  beneficiary_name: string | null
+  beneficiary_document: string | null
+  scheduled_for: string | null
+  submitted_at: string | null
+  authorized_at: string | null
+  settled_at: string | null
+  external_id: string | null
+  external_status: string | null
+  receipt_url: string | null
+  failure_reason: string | null
+  payable?: {
+    id: string
+    description: string
+    value: string
+    due_date: string | null
+    status: PayableStatus
+    supplier: { id: string; name: string } | null
+  } | null
+  events?: PayoutOrderEvent[]
+  created_at: string | null
+}
+
+export interface PayoutOverview {
+  enabled: boolean
+  max_per_payment: number
+  max_per_day: number
+  committed_today: number
+  balance: number | null
+  environment: 'sandbox' | 'production'
 }

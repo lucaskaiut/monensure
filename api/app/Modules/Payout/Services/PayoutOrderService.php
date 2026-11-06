@@ -574,6 +574,9 @@ class PayoutOrderService
                 'identificationField' => $order->payment_code,
                 'description' => $description,
                 'externalReference' => $order->uuid,
+                // Sem scheduleDate o Asaas agenda boletos a vencer para o dia do
+                // vencimento. O agendamento é feito aqui, então a ordem é paga hoje.
+                'scheduleDate' => CarbonImmutable::now((string) config('asaas.payouts.timezone'))->toDateString(),
                 // Boletos sem valor na linha digitável exigem o valor explícito.
                 'value' => ($order->preview['value'] ?? null) === null ? $amount : null,
             ], static fn (mixed $value): bool => $value !== null)),

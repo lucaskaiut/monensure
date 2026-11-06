@@ -160,6 +160,8 @@ class PayoutTest extends TestCase
         Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/bill')
             && $request['identificationField'] === self::BOLETO
             && $request['externalReference'] === $order->uuid
+            // Paga hoje (Brasília), e não no vencimento do boleto.
+            && $request['scheduleDate'] === now('America/Sao_Paulo')->toDateString()
             && $request->header('access_token')[0] === 'test-payout-key');
 
         // Ainda não houve baixa: só com a confirmação do Asaas.
